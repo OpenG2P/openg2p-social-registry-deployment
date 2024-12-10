@@ -174,3 +174,39 @@ questions:
   label: Spring Config application properties.
   group: Mock Identity System Settings
   show_if: "esignet.enabled=true&&esignet.mock-identity-system.enabled=true&&esignet.mock-identity-system.springConfig.gitRepo.enabled=false"
+
+- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-workers.envVars.SR_CELERY_WORKERS_AUTH_CLIENT_ID
+  description: KeyCloak Client ID
+  type: string
+  label: KeyCloak Client ID
+  group: SR BG Tasks Settings
+
+- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-workers.envVars.SR_CELERY_WORKERS_AUTH_CLIENT_SECRET
+  description: KeyCloak Client Secret for SR Celery Worker
+  type: string
+  label: KeyCloak Client Secret
+  group: SR BG Tasks Settings
+
+- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS
+  description: Max Id Generation Request Attempts
+  type: string
+  label: Max Id Generation Request Attempts
+  group: SR BG Tasks Settings
+
+- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS
+  description: Max Id Update Request Attempts
+  type: string
+  label: Max Id Update Request Attempts
+  group: SR BG Tasks Settings
+
+- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY
+  description: Res Partner Id Generation Frequency
+  type: string
+  label: Res Partner Id Generation Frequency
+  group: SR BG Tasks Settings
+
+- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY
+  description: Res Partner Id Generation Update Frequency
+  type: string
+  label: Res Partner Id Generation Update Frequency
+  group: SR BG Tasks Settings

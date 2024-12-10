@@ -1,6 +1,7 @@
 global:
   keycloakBaseUrl: https://keycloak.openg2p.sandbox.net
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
+  idgeneratorBaseUrl: https://idgenerator.openg2p.sandbox.net
 
 nameOverride: openg2p-social-registry
 
@@ -182,3 +183,48 @@ esignet:
       repoUrl: https://github.com/openg2p/mosip-config
       branch: master
     rawConfig: ""
+
+openg2p-sr-bg-tasks:
+  enabled: true
+
+  openg2p-sr-bg-tasks-celery-beat-producers:
+    enabled: true
+    envVars:
+      SR_CELERY_BEAT_DB_DBNAME: socialregistrydb
+      SR_CELERY_BEAT_DB_PORT: 5432
+      SR_CELERY_BEAT_DB_USERNAME: sruser
+      SR_CELERY_BEAT_DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
+      SR_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+      SR_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+      SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
+      SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
+      SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY: 60
+      SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY: 60
+
+    envVarsFrom:
+      SR_CELERY_BEAT_DB_PASSWORD:
+        secretKeyRef:
+          name: '{{ .Release.Name }}'-postgresql
+          key: password
+
+  openg2p-sr-bg-tasks-celery-workers:
+    enabled: true
+    envVars:
+      SR_CELERY_WORKERS_DB_DBNAME: socialregistrydb
+      SR_CELERY_WORKERS_DB_USERNAME: sruser
+      SR_CELERY_WORKERS_DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
+      SR_CELERY_WORKERS_DB_PORT: 5432
+      SR_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+      SR_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+      SR_CELERY_WORKERS_AUTH_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
+      SR_CELERY_WORKERS_AUTH_CLIENT_ID: 'openg2p-sr-bg-tasks-{{ .Release.Namespace }}'
+      SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: ''
+      SR_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
+      SR_CELERY_WORKERS_MOSIP_GET_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'/v1/idgenerator/uin
+      SR_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'/v1/idgenerator/uin
+
+    envVarsFrom:
+      SR_CELERY_WORKERS_DB_PASSWORD:
+        secretKeyRef:
+          name: '{{ .Release.Name }}'-postgresql
+          key: password
