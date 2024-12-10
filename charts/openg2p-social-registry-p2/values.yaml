@@ -204,7 +204,7 @@ openg2p-sr-bg-tasks:
     envVarsFrom:
       SR_CELERY_BEAT_DB_PASSWORD:
         secretKeyRef:
-          name: '{{ .Release.Name }}'-postgresql
+          name: '{{ .Release.Name }}-postgresql'
           key: password
 
   openg2p-sr-bg-tasks-celery-workers:
@@ -220,11 +220,11 @@ openg2p-sr-bg-tasks:
       SR_CELERY_WORKERS_AUTH_CLIENT_ID: 'openg2p-sr-bg-tasks-{{ .Release.Namespace }}'
       SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: ''
       SR_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
-      SR_CELERY_WORKERS_MOSIP_GET_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'/v1/idgenerator/uin
-      SR_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'/v1/idgenerator/uin
+      SR_CELERY_WORKERS_MOSIP_GET_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/v1/idgenerator/uin'
+      SR_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/v1/idgenerator/uin'
 
     envVarsFrom:
       SR_CELERY_WORKERS_DB_PASSWORD:
         secretKeyRef:
-          name: '{{ .Release.Name }}'-postgresql
+          name: '{{ .Release.Name }}-postgresql'
           key: password
