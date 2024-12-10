@@ -34,7 +34,7 @@ landingPage:
       link: "https://opensearch-reporting-sr.explore.openg2p.org"
 volumeMount:
   name: html-volume
-  mountPath: /usr/share/nginx/html
+  path: /usr/share/nginx/html
 
 ingress:
   enabled: false
@@ -70,8 +70,8 @@ istio:
     gateway: "internal"
     destination: '{{ include "landing.fullname" . }}'
     destinationPort: '{{ .Values.service.port }}'
-    prefix: /api/mapper/
-    rewriteUri: "/"
+    prefix: "" 
+    rewriteUri: ""
   gateway:
     enabled: false
     host: ""
@@ -93,8 +93,8 @@ autoscaling:
 
 readinessProbe:
   httpGet:
-    path: /ping
-    port: 8000
+    path: /
+    port: 80
   failureThreshold: 20
   periodSeconds: 30
   timeoutSeconds: 10
@@ -102,8 +102,8 @@ readinessProbe:
 
 livenessProbe:
   httpGet:
-    path: /ping
-    port: 8000
+    path: /
+    port: 80
   initialDelaySeconds: 15
   periodSeconds: 60
   failureThreshold: 5
