@@ -1,5 +1,5 @@
 apiVersion: v2
 name: sr-landing
-description: A Helm chart for installing landing page for the Social Registry 
+description: A Helm chart for installing landing page for the Social Registry
 type: application
 version: 1.4.0-develop
