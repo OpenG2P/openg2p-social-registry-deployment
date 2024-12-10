@@ -1,0 +1,147 @@
+hostname: landing.explore.openg2p.org
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: "1.21.1"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+envVars: {}
+
+envVarsFrom: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+containerPort: 80
+
+landingPage:
+  urls:
+    admin:
+      name: Social Registry Admin
+      link: "https://admin-sr.explore.openg2p.org"
+    minio:
+      name: Minio Dashboard
+      link: "https://minio-sr.explore.openg2p.org"
+    reporting:
+      name: Reporting Dashboard
+      link: "https://opensearch-reporting-sr.explore.openg2p.org"
+volumeMount:
+  name: html-volume
+  mountPath: /usr/share/nginx/html
+
+ingress:
+  enabled: false
+  className: ""
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: ""
+      paths:
+        - path: /api/mapper(/|$)(.*)
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+  #
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+istio:
+  enabled: true
+  virtualservice:
+    enabled: true
+    host: ""
+    gateway: "internal"
+    destination: '{{ include "landing.fullname" . }}'
+    destinationPort: '{{ .Values.service.port }}'
+    prefix: /api/mapper/
+    rewriteUri: "/"
+  gateway:
+    enabled: false
+    host: ""
+    ingressController:
+      istio: ingressgateway
+    httpTlsRedirect: true
+    httpEnabled: true
+    httpsEnabled: false
+    tls:
+      mode: SIMPLE
+      credentialName: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+readinessProbe:
+  httpGet:
+    path: /ping
+    port: 8000
+  failureThreshold: 20
+  periodSeconds: 30
+  timeoutSeconds: 10
+  initialDelaySeconds: 30
+
+livenessProbe:
+  httpGet:
+    path: /ping
+    port: 8000
+  initialDelaySeconds: 15
+  periodSeconds: 60
+  failureThreshold: 5
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations:
+  helm.sh/revision: '{{ .Release.Revision }}'
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+containerSecurityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+updateStrategy:
+  type: RollingUpdate
+
+command: []
+args: []
+
+
+resources: {}

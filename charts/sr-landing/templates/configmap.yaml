@@ -1,0 +1,244 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-html-config
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     s   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+         <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;400;700&display=swap" rel="stylesheet">
+         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
+        <style>
+            html, body {
+                margin: 0;
+                display: flex;
+                align-items: flex-start;
+                justify-content: center; /* Centers container horizontally */
+            }
+            .container {
+                width: 100%;
+                width: 1280px;
+                #border-radius: 8px;
+                overflow: hidden;
+     
+            }
+            .header {
+                position: relative;
+                border-bottom: 1px solid #ddd;
+                background: #ffffff;
+                height: 99px; 
+                display: flex;
+            }
+            .header-menu-container {
+               position: absolute;
+               width: 38px;
+               height: 25px;
+               position: absolute;
+               display: flex;
+               left: 1111px; 
+               top: 37px;  
+            }
+            .header-menu-line {
+                position: absolute;
+                height: 4px;
+                width: 100%;
+                border: none;
+                border-radius: 2px;
+                background-color: #F07D20;
+             }
+            .header-menu-line2 {
+                position: absolute;
+                height: 4px;
+                width: 100%;
+                border: none;
+                border-radius: 2px;
+                background-color: #D9D9D9;
+                top: 10px;
+             }
+            .header-menu-line3 {
+                position: absolute;
+                height: 4px;
+                width: 100%;
+                border: none;
+                border-radius: 2px;
+                background-color: #F07D20;
+                top: 20px;
+             }
+            .brand {
+                position: relative;
+                #border-bottom: 1px solid #ddd;
+                background: #FEC401; 
+                height: 575px; 
+                display: flex;
+            }
+            .brand-image-1 {
+                position: absolute;
+                left: 442px; 
+                top: 24px;  
+                width: 317px;
+                height: 317px;
+            }
+            .brand-welcome {
+                position: absolute; 
+                left: 296px; 
+                top: 275px;  
+                font-family: 'Montserrat'; 
+                font-weight: Bold;
+            }
+            .brand-openg2p {
+                position: absolute;
+                left: 397px; 
+                top: 298px;  
+                font-family: 'Montserrat'; 
+                font-weight: Bold;
+                font-size: 90px;
+                color: #FFFFFF;
+            }
+            .brand-explore {
+                position: absolute; 
+                left: 774px; 
+                top: 495px;  
+                font-family: 'Montserrat'; 
+                font-weight: Medium;
+                font-size: 25px;
+                color: #000000;
+            }
+            .logo {
+                width: 147px;
+                height: auto;
+                position: absolute;
+                #border-radius: 8px;
+                left: 123px;
+                top: 22px;
+            }
+            .black-background {
+                position: relative;
+                background: #000000;
+                height: 300px; 
+            }
+            .black-welcome {
+                position: absolute; 
+                left: 123px; 
+                top: 53px;  
+                font-family: 'Montserrat'; 
+                font-weight: 'SemiBold';
+                font-size: 22px;
+                color: #E6E6E6;
+            }
+            .black-interactive {
+                position: absolute; 
+                left: 123px; 
+                top: 120px;  
+                max-width: 273px;
+                font-family: 'Roboto Slab'; 
+                font-weight: 300;
+                font-size: 52px;
+                color: #F4C235;
+            }
+            .black-interactive-text {
+                position: absolute; 
+                left: 674px; 
+                top: 104px;  
+                max-width: 483px;
+                font-family: 'Montserrat'; 
+                font-weight: 'Regular';
+                font-size: 22px;
+                color: #8C8989;
+            }
+            .brand2 {
+                position: relative;
+                background: #FEC401; 
+                height: 800px; 
+                display: flex;
+            }
+            .brand2-explore {
+                position: absolute; 
+                #left: 251px; 
+                left: 360px; 
+                top: 71px;  
+                font-family: 'Roboto Slab'; 
+                font-weight: 'Regular';
+                font-size: 60px;
+                color: #FFFFFF;
+            }
+           .link-square {
+                position: absolute; 
+                border-radius: 20px;
+                background: #F4C235;
+                left: 123px;
+                top: 203px;
+                width: 288px;
+                height: 125px;
+            }
+           .link-text {
+                position: absolute; 
+                left: 28px;
+                top: 31px;
+                width: 200px;
+                font-weight: 'Regular';
+                font-size: 20px;
+                font-family: 'Inter';
+                color: #514C4C;
+            }
+           .icon {
+                position: absolute; 
+                left: 214px;
+                top: 31px;
+                width: 46px;
+                height: 46px;
+            }
+        
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <img src="https://openg2p.github.io/project/OpenG2PHorizontalLogoLightBackground.png" class="logo">
+                <div class="header-menu-container">
+                    <div class="header-menu-line"></div>
+                    <div class="header-menu-line2"></div>
+                    <div class="header-menu-line3"></div>
+                </div>
+            </div>
+            <div class="brand">
+                <div class="brand-welcome">Welcome to</div>
+                <div class="brand-image-1">
+                    <img src="https://openg2p.github.io/project/design-assets/sandbox-landing-1.png"></img>
+                </div>
+                <div class="brand-openg2p">OpenG2P.</div>
+                <div class="brand-explore">Explore. Learn. Adopt</div>
+            </div>
+            <div class="black-background">
+                <div class="black-welcome">Welcome to OpenG2P's</div>
+                <div class="black-interactive">interactive sandbox</div>
+                <div class="black-interactive-text">a dynamic platform designed for you to explore the functionalities of our modules and see our products in action. This is your gateway to understanding the full potential of our offerings.</div>
+            </div>
+            <div class="brand2">
+                <div class="brand2-explore">LET'S EXPLORE!</div>
+                <a href={{ .Values.landingPage.urls.admin.link }} target="_blank">
+                    <div class="link-square">
+                        <div class="icon"><img src="https://openg2p.github.io/project/design-assets/link-icon.png"></img> </div>
+                        <div class="link-text">{{ .Values.landingPage.urls.admin.name }}</div>
+                    </div>
+                </a>
+                <div class="link-square" style="left: 496px;">
+                    <div class="icon">
+                        <img src="https://openg2p.github.io/project/design-assets/link-icon.png"></img>
+                    </div>
+                    <div class="link-text">Reporting Dashboard</div>
+                </div>
+                <div class="link-square" style="left: 869px;">
+                    <div class="icon">
+                        <img src="https://openg2p.github.io/project/design-assets/link-icon.png"></img>
+                    </div>
+                    <div class="link-text">MinIO Dashboard</div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+
