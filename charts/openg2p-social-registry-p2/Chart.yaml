@@ -2,7 +2,7 @@ apiVersion: v2
 name: openg2p-social-registry-p2
 description: A Helm chart for OpenG2P Social Registry - Part 2
 type: application
-version: 1.4.0-develop
+version: 1.4.0
 dependencies:
 - name: superset
   version: 0.12.11

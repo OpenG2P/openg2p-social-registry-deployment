@@ -22,7 +22,7 @@ odoo:
 
   image:
     repository: openg2p/openg2p-social-registry-odoo-package
-    tag: 1.4
+    tag: 1.4.0
     pullPolicy: Always
 
   service:
