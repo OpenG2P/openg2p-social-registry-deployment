@@ -76,10 +76,3 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          volumeMounts:
-          - name: {{ .Values.volumeMount.name }}
-            mountPath: {{ .Values.volumeMount.path }}
-      volumes:
-      - name: {{ .Values.volumeMount.name }}
-        configMap:
-          name: {{ .Release.Name }}-html-config
