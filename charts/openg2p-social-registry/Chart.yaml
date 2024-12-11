@@ -4,6 +4,10 @@ description: A Helm chart for OpenG2P Social Registry - Part 1
 type: application
 version: 1.4.0-develop
 dependencies:
+- name: sr-landing
+  version: 1.4.0-develop
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: odoo.enabled
 - name: odoo
   version: 26.2.9
   repository: oci://registry-1.docker.io/bitnamicharts

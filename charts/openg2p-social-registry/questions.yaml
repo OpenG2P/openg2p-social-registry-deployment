@@ -1,6 +1,13 @@
 questions:
+
+- variable: sr-landing.landingPageHostName
+  description: Hostname for the landing page of Social Registry
+  type: string
+  label: Landing Page Hostname
+  group: General Settings
+
 - variable: hostname
-  description: Hostname to access Social Registry
+  description: Hostname to access Social Registry Admin 
   type: string
   label: Hostname
   group: General Settings

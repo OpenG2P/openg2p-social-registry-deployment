@@ -4,7 +4,8 @@ global:
 
   sysAdminEmail: admin@openg2p.sandbox.net
 
-hostname: socialregistry.openg2p.sandbox.net
+# This host name is for SR Odoo component
+hostname: admin-sr.openg2p.sandbox.net
 
 odoo:
   enabled: true
@@ -118,6 +119,7 @@ keymanager:
 mail:
   enabled: true
   mailname: openg2p.sandbox.net
+
 
 odk-central:
   enabled: true
@@ -432,3 +434,15 @@ istio:
     tls:
       mode: SIMPLE
       credentialName: ""
+
+sr-landing:
+  enabled: false 
+  landingPageHostname: socialregistry.explore.openg2p.org
+  envVars: 
+    SR_ADMIN_URL: 'https://{{ tpl .Values.hostname $ }}'
+    SR_REPORTING_URL: 'https://{{ tpl .Values.reporting.opensearch.hostname $ }}' 
+    SR_LOGGING_URL: 'https://{{ tpl .Values.loggingOpensearch.hostname $ }}' 
+    SR_MINIO_URL: 'https://{{ tpl .Values.minio.hostname $ }}'
+    SR_ODK_URL: 'https://{{ tpl .Values.odk-central.hostname $ }}'
+    SR_KAFKA_URL: 'https://{{ tpl .Values.reporting.kafkaUi.hostname $ }}' 
+    SR_SUPERSET_URL: "https://superset-sr.explore.openg2p.org"
