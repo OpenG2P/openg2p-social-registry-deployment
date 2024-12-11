@@ -1,4 +1,4 @@
-hostname: landing.explore.openg2p.org
+landingPageHostname: socialregistry.explore.openg2p.org
 
 replicaCount: 1
 
