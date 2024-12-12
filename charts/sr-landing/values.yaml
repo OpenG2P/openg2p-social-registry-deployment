@@ -1,4 +1,13 @@
-landingPageHostname: socialregistry.explore.openg2p.org
+global:
+  srAdminHostname: admin-sr.openg2p.sandbox.net
+  srOdkCentralHostname: odk-sr.openg2p.sandbox.net
+  srMinioHostname: minio-sr.openg2p.sandbox.net
+  srOpensearchHostname: opensearch-sr.openg2p.sandbox.net
+  srKafkaUiHostname: kafka-sr.openg2p.sandbox.net
+  srSupersetHostname: superset-sr.openg2p.sandbox.net
+  srLandingPageHostname: socialregistry.openg2p.sandbox.net
+
+hostname: '{{ tpl .Values.global.srLandingPageHostname $ }}'
 
 replicaCount: 1
 
@@ -11,14 +20,14 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-envVars: 
-  SR_ADMIN_URL: "https://admin.explore.openg2p.org"
-  SR_REPORTING_URL: "https://reporting.explore.openg2p.org"
-  SR_LOGGING_URL: "https://reporting.explore.openg2p.org"
-  SR_MINIO_URL: "https://minio.explore.openg2p.org"
-  SR_ODK_URL: "https://odk.explore.openg2p.org"
-  SR_KAFKA_URL: "https://kafka.explore.openg2p.org"
-  SR_SUPERSET_URL: "https://kafka.explore.openg2p.org"
+envVars:
+  SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}'
+  SR_REPORTING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
+  SR_LOGGING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
+  SR_MINIO_URL: 'https://{{ tpl .Values.global.srMinioHostname $ }}'
+  SR_ODK_URL: 'https://{{ tpl .Values.global.srOdkCentralHostname $ }}'
+  SR_KAFKA_URL: 'https://{{ tpl .Values.global.srKafkaUiHostname $ }}'
+  SR_SUPERSET_URL: 'https://{{ tpl .Values.global.srSupersetHostname $ }}'
 
 envVarsFrom: {}
 
@@ -32,13 +41,12 @@ ingress:
   enabled: false
   className: ""
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
     kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: ""
       paths:
-        - path: /api/mapper(/|$)(.*)
+        - path: /
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls

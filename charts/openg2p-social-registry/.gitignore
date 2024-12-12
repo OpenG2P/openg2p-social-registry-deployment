@@ -1,2 +1,12 @@
-charts/
+charts/*.tgz
+charts/artifactory
+charts/esignet
+charts/idgenerator
+charts/keymanager
+charts/mock-identity-system
+charts/mail
+charts/odk-central
+charts/openg2p-sr-bg-tasks
+charts/reporting
+charts/reporting-init
 Chart.lock

@@ -1,12 +1,11 @@
 apiVersion: v2
 name: openg2p-social-registry
-description: A Helm chart for OpenG2P Social Registry - Part 1
+description: A Helm chart for OpenG2P Social Registry
 type: application
 version: 1.4.0-develop
 dependencies:
 - name: sr-landing
   version: 1.4.0-develop
-  repository: https://openg2p.github.io/openg2p-helm
   condition: odoo.enabled
 - name: odoo
   version: 26.2.9
@@ -21,18 +20,33 @@ dependencies:
   repository: oci://registry-1.docker.io/bitnamicharts
   condition: minio.enabled
 - name: odk-central
-  version: v2024.2.1
+  version: v2024.2.2
   repository: https://openg2p.github.io/openg2p-helm
   condition: odk-central.enabled
 - name: opensearch
-  alias: loggingOpensearch
   version: 1.2.0
   repository: oci://registry-1.docker.io/bitnamicharts
-  condition: loggingOpensearch.enabled
+  condition: opensearch.enabled
+- name: kafka
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 29.x.x
+  condition: kafka.enabled
+- name: artifactory
+  version: 12.0.2
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: artifactory.enabled
 - name: keymanager
-  version: 12.0.1
+  version: 12.0.2
   repository: https://openg2p.github.io/openg2p-helm
   condition: keymanager.enabled
+- name: softhsm
+  repository: https://mosip.github.io/mosip-helm
+  version: 12.0.1
+  condition: softhsm.enabled
+- name: idgenerator
+  version: 12.0.2
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: idgenerator.enabled
 - name: reporting
   version: 0.0.0-develop
   repository: https://openg2p.github.io/openg2p-helm
@@ -41,7 +55,38 @@ dependencies:
   version: 0.0.0-develop
   repository: https://openg2p.github.io/openg2p-helm
   condition: reporting-init.enabled
+- name: redis
+  alias: bgTasksRedis
+  version: 19.x.x
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: openg2p-sr-bg-tasks.enabled
+- name: openg2p-sr-bg-tasks
+  version: 1.0.0-develop
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: openg2p-sr-bg-tasks.enabled
+- name: superset
+  version: 0.12.11
+  repository: https://apache.github.io/superset
+  condition: superset.enabled
+- name: redis
+  alias: supersetRedis
+  version: 19.x.x
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: superset.enabled
+- name: esignet
+  version: 1.4.2
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: esignet.enabled
+- name: redis
+  alias: esignetRedis
+  version: 19.x.x
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: esignet.enabled
+- name: mock-identity-system
+  version: 0.9.4
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: mock-identity-system.enabled
 icon: https://openg2p.github.io/openg2p-helm/openg2p-logo.png
 annotations:
-  catalog.cattle.io/display-name: "OpenG2P Social Registry - Part 1"
+  catalog.cattle.io/display-name: "OpenG2P Social Registry"
   openg2p.org/add-to-rancher: ""

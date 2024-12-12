@@ -1,6 +1,9 @@
 {{- if .Values.minio.enabled }}
 {{- if .Values.minio.istio.enabled }}
 {{- if .Values.minio.istio.virtualservice.enabled }}
+{{- $istioVsHostname := include "common.tplvalues.render" (dict "value" .Values.minio.istio.virtualservice.host "context" .Subcharts.minio) }}
+{{- $mainHostname := include "common.tplvalues.render" (dict "value" .Values.minio.hostname "context" .Subcharts.minio) }}
+{{- $hostname := default $mainHostname $istioVsHostname }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -11,20 +14,20 @@ metadata:
   {{- end }}
 spec:
   hosts:
-  - {{ default .Values.minio.hostname .Values.minio.istio.virtualservice.host | quote }}
+  - {{ $hostname | quote }}
   gateways:
   - {{ default (include "common.names.fullname" .Subcharts.minio) .Values.minio.istio.virtualservice.gateway }}
   http:
   - headers:
       request:
         set:
-          x-forwarded-host: {{ default .Values.minio.hostname .Values.minio.istio.virtualservice.host | quote }}
+          x-forwarded-host: {{ $hostname | quote }}
           x-forwarded-proto: https
     route:
     - destination:
-        host: {{ include "common.tplvalues.render" (dict "value" .Values.minio.istio.virtualservice.destination "context" $) }}
+        host: {{ include "common.tplvalues.render" (dict "value" .Values.minio.istio.virtualservice.destination "context" .Subcharts.minio) }}
         port:
-          number: {{ include "common.tplvalues.render" (dict "value" .Values.minio.istio.virtualservice.destinationPort "context" $) }}
+          number: {{ include "common.tplvalues.render" (dict "value" .Values.minio.istio.virtualservice.destinationPort "context" .Subcharts.minio) }}
 {{- end }}
 {{- end }}
 {{- end }}
