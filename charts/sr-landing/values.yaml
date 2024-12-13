@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: openg2p/openg2p-social-registry-landing
   tag: "develop"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 imagePullSecrets: []
 nameOverride: ""
