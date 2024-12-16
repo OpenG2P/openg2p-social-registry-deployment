@@ -436,13 +436,52 @@ istio:
       credentialName: ""
 
 sr-landing:
-  enabled: false 
+  enabled: false
   landingPageHostname: socialregistry.explore.openg2p.org
-  envVars: 
+  envVars:
     SR_ADMIN_URL: 'https://{{ tpl .Values.hostname $ }}'
-    SR_REPORTING_URL: 'https://{{ tpl .Values.reporting.opensearch.hostname $ }}' 
-    SR_LOGGING_URL: 'https://{{ tpl .Values.loggingOpensearch.hostname $ }}' 
+    SR_REPORTING_URL: 'https://{{ tpl .Values.reporting.opensearch.hostname $ }}'
+    SR_LOGGING_URL: 'https://{{ tpl .Values.loggingOpensearch.hostname $ }}'
     SR_MINIO_URL: 'https://{{ tpl .Values.minio.hostname $ }}'
     SR_ODK_URL: 'https://{{ tpl .Values.odk-central.hostname $ }}'
-    SR_KAFKA_URL: 'https://{{ tpl .Values.reporting.kafkaUi.hostname $ }}' 
+    SR_KAFKA_URL: 'https://{{ tpl .Values.reporting.kafkaUi.hostname $ }}'
     SR_SUPERSET_URL: "https://superset-sr.explore.openg2p.org"
+
+bgTasksRedis:
+  nameOverride: bg-tasks-redis
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: false
+
+openg2p-sr-bg-tasks:
+  enabled: true
+  nameOverride: bg-tasks
+
+  openg2p-sr-bg-tasks-celery-beat-producers:
+    enabled: true
+    nameOverride: bg-tasks-producer
+
+    postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
+    redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
+
+    envVars:
+      SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
+      SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
+      SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY: 60
+      SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY: 60
+
+  openg2p-sr-bg-tasks-celery-workers:
+    enabled: true
+    nameOverride: bg-tasks-worker
+
+    postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
+    redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
+    idgeneratorInstallationName: 'idgenerator'
+
+    envVars:
+      SR_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
+      SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
