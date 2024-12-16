@@ -7,7 +7,7 @@ nameOverride: openg2p-social-registry
 
 superset:
   enabled: true
-  hostname: superset-sr.openg2p.sandbox.net
+  hostname: '{{ tpl .Values.global.srSupersetHostname $ }}'
 
   oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
   oidcClientId: 'openg2p-sr-superset-{{ .Release.Namespace }}'
@@ -17,6 +17,8 @@ superset:
 
   init:
     createAdmin: false
+    jobAnnotations:
+      "helm.sh/hook-weight": "0"
 
   postgresql:
     enabled: false
@@ -27,7 +29,7 @@ superset:
   supersetNode:
     connections:
       redis_host: '{{ .Release.Name }}-superset-redis-headless'
-      db_host: '{{ .Release.Name }}-superset-postgresql'
+      db_host: '{{ .Release.Name | replace "-p2" "" }}-postgresql'
 
   bootstrapScript: |
     #!/bin/bash
@@ -118,62 +120,57 @@ superset:
         mode: SIMPLE
         credentialName: ""
 
-# TODO: Doing this since postgres and redis charts inside superset are old.
-supersetPostgresql:
-  nameOverride: superset-postgresql
-  auth:
-    username: superset
-    password: superset
-    database: superset
-  primary:
-    extendedConfiguration: |-
-      wal_level = logical
-      max_wal_senders = 20
-      max_replication_slots = 10
-
 supersetRedis:
   nameOverride: superset-redis
   architecture: standalone
   auth:
     enabled: false
   master:
+    resourcesPreset: none
+    persistence:
+      enabled: false
+
+esignetRedis:
+  nameOverride: esignet-redis
+  architecture: standalone
+  auth:
+    enabled: true
+  master:
+    resourcesPreset: none
     persistence:
       enabled: false
 
 esignet:
   enabled: false
-  hostname: esignet-sr.openg2p.sandbox.net
+  hostname: '{{ tpl .Values.global.srEsignetHostname $ }}'
+
+  artifactoryInstallationName: '{{ .Release.Name | replace "-p2" "" }}-artifactory'
+  postgresqlInstallationName: '{{ .Release.Name | replace "-p2" "" }}-postgresql'
+  redisInstallationName: '{{ .Release.Name }}-esignet-redis'
+  kafkaInstallationName: '{{ .Release.Name | replace "-p2" "" }}-kafka'
+  mockIdentitySystemInstallationName: '{{ .Release.Name }}-mock-identity-system'
+  softhsmInstallationName: '{{ .Release.Name | replace "-p2" "" }}-softhsm'
 
   captchaEnabled: false
+
   envVars:
     esignet_captcha_site_key: ''
     esignet_captcha_secret_key: ''
 
+  envVarsFrom:
+    db_dbuser_password:
+      secretKeyRef:
+        name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+        key: esignetuser
+
   postgresInit:
     commonAnnotations:
       "helm.sh/hook-weight": "0"
-
-  keygen:
-    commonAnnotations:
-      "helm.sh/hook-weight": "1"
-
-  mock-identity-system:
-    enabled: true
-    hostname: esignet-sr.openg2p.sandbox.net
-    springConfig:
-      names: application,mock-identity-system
-      profile: default
-      gitRepo:
-        enabled: true
-        repoUrl: https://github.com/openg2p/mosip-config
-        branch: master
-      rawConfig: ""
-    postgresInit:
-      commonAnnotations:
-        "helm.sh/hook-weight": "0"
-    keygen:
-      commonAnnotations:
-        "helm.sh/hook-weight": "1"
+    envVarsFrom:
+      DBUSER_PWD:
+        secretKeyRef:
+          name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+          key: esignetuser
 
   springConfig:
     names: application,esignet
@@ -184,47 +181,34 @@ esignet:
       branch: master
     rawConfig: ""
 
-openg2p-sr-bg-tasks:
-  enabled: true
+mock-identity-system:
+  enabled: false
+  hostname: '{{ tpl .Values.global.srEsignetHostname $ }}'
 
-  openg2p-sr-bg-tasks-celery-beat-producers:
-    enabled: true
-    envVars:
-      SR_CELERY_BEAT_DB_DBNAME: socialregistrydb
-      SR_CELERY_BEAT_DB_PORT: 5432
-      SR_CELERY_BEAT_DB_USERNAME: sruser
-      SR_CELERY_BEAT_DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
-      SR_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
-      SR_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
-      SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
-      SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
-      SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY: 60
-      SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY: 60
+  artifactoryInstallationName: '{{ .Release.Name | replace "-p2" "" }}-artifactory'
+  postgresqlInstallationName: '{{ .Release.Name | replace "-p2" "" }}-postgresql'
+  softhsmInstallationName: '{{ .Release.Name | replace "-p2" "" }}-softhsm'
 
+  envVarsFrom:
+    db_dbuser_password:
+      secretKeyRef:
+        name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+        key: mockidsystemuser
+
+  postgresInit:
+    commonAnnotations:
+      "helm.sh/hook-weight": "0"
     envVarsFrom:
-      SR_CELERY_BEAT_DB_PASSWORD:
+      DBUSER_PWD:
         secretKeyRef:
-          name: '{{ .Release.Name }}-postgresql'
-          key: password
+          name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+          key: mockidsystemuser
 
-  openg2p-sr-bg-tasks-celery-workers:
-    enabled: true
-    envVars:
-      SR_CELERY_WORKERS_DB_DBNAME: socialregistrydb
-      SR_CELERY_WORKERS_DB_USERNAME: sruser
-      SR_CELERY_WORKERS_DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
-      SR_CELERY_WORKERS_DB_PORT: 5432
-      SR_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
-      SR_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
-      SR_CELERY_WORKERS_AUTH_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
-      SR_CELERY_WORKERS_AUTH_CLIENT_ID: 'openg2p-sr-bg-tasks-{{ .Release.Namespace }}'
-      SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: ''
-      SR_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
-      SR_CELERY_WORKERS_MOSIP_GET_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/v1/idgenerator/uin'
-      SR_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/v1/idgenerator/uin'
-
-    envVarsFrom:
-      SR_CELERY_WORKERS_DB_PASSWORD:
-        secretKeyRef:
-          name: '{{ .Release.Name }}-postgresql'
-          key: password
+  springConfig:
+    names: application,mock-identity-system
+    profile: default
+    gitRepo:
+      enabled: true
+      repoUrl: https://github.com/openg2p/mosip-config
+      branch: master
+    rawConfig: ""

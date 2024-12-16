@@ -1,17 +1,12 @@
 apiVersion: v2
 name: openg2p-social-registry-p2
-description: A Helm chart for OpenG2P Social Registry - Part 2
+description: A Helm chart for OpenG2P Social Registry - Pack 2
 type: application
-version: 1.4.0-develop
+version: 2.0.0-develop
 dependencies:
 - name: superset
   version: 0.12.11
   repository: https://apache.github.io/superset
-  condition: superset.enabled
-- name: postgresql
-  alias: supersetPostgresql
-  version: 15.x.x
-  repository: oci://registry-1.docker.io/bitnamicharts
   condition: superset.enabled
 - name: redis
   alias: supersetRedis
@@ -19,14 +14,19 @@ dependencies:
   repository: oci://registry-1.docker.io/bitnamicharts
   condition: superset.enabled
 - name: esignet
-  version: 1.4.1
+  version: 1.4.2
   repository: https://openg2p.github.io/openg2p-helm
   condition: esignet.enabled
-- name: openg2p-sr-bg-tasks
-  version: 1.0.0
+- name: redis
+  alias: esignetRedis
+  version: 19.x.x
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: esignet.enabled
+- name: mock-identity-system
+  version: 0.9.4
   repository: https://openg2p.github.io/openg2p-helm
-  condition: openg2p-sr-bg-tasks.enabled
+  condition: mock-identity-system.enabled
 icon: https://openg2p.github.io/openg2p-helm/openg2p-logo.png
 annotations:
-  catalog.cattle.io/display-name: "OpenG2P Social Registry - Part 2"
+  catalog.cattle.io/display-name: "OpenG2P Social Registry - Pack 2"
   openg2p.org/add-to-rancher: ""

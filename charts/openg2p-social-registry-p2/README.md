@@ -1,18 +1,18 @@
-# OpenG2P Social Registry Helm Chart - Part 2
+# OpenG2P Social Registry Helm Chart - Pack 2
 
-As the maximum size of a helm chart cannot be more than 1MiB
-(each etcd object can only hold maximum of 1MiB unless configured otherwise),
-the OpenG2P Social Regsitry helm chart has been split into two parts.
+Due Helm release size limitations (K8s secret, which is an etcd object,
+can't exceed 1MiB), the OpenG2P Social Regsitry helm chart has been split
+into two packs.
 
-This is the second part. This contains the following components:
+This is the second pack. This contains the following components:
 
 - Superset
-- eSignet
+- eSignet (eSignet + Mock Identity System)
 
-Skip this helm chart if you dont want to install these components.
+Skip this pack if you dont want to install these components.
 
 ## IMPORTANT
 
-Whatever installation name chosen of Part 1, the same will have to be given for part 2 with suffix "-p2".
+Whatever installation name chosen of Pack 1, the same will have to be given for pack 2 with suffix "-p2".
 
-For example, if you want the installation name to be "sr", then the name for part 1 will have to be "sr", and the name for part 2 will have to be "sr-p2".
+For example, if you want the installation name to be "sr", then the name for pack 1 will have to be "sr", and the name for pack 2 will have to be "sr-p2".

@@ -1,6 +1,9 @@
 {{- if .Values.minio.enabled  }}
 {{- if .Values.minio.istio.enabled  }}
 {{- if .Values.minio.istio.gateway.enabled  }}
+{{- $istioGatewayHostname := include "common.tplvalues.render" (dict "value" .Values.minio.istio.gateway.host "context" .Subcharts.minio) }}
+{{- $mainHostname := include "common.tplvalues.render" (dict "value" .Values.minio.hostname "context" .Subcharts.minio) }}
+{{- $hostname := default $mainHostname $istioGatewayHostname }}
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
@@ -19,7 +22,7 @@ spec:
       number: 8080
       protocol: HTTP2
     hosts:
-      - {{ default .Values.minio.hostname .Values.minio.istio.gateway.host | quote }}
+      - {{ $hostname | quote }}
     {{- if .Values.minio.istio.gateway.httpTlsRedirect }}
     tls:
       httpsRedirect: true
@@ -31,7 +34,7 @@ spec:
       number: 8443
       protocol: HTTPS
     hosts:
-      - {{ default .Values.minio.hostname .Values.minio.istio.gateway.host | quote }}
+      - {{ $hostname | quote }}
     tls:
       {{ toYaml (omit .Values.minio.istio.gateway.tls "enabled") | nindent 6 }}
   {{- end }}

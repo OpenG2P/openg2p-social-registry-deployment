@@ -1,13 +1,12 @@
 questions:
-
-- variable: sr-landing.landingPageHostName
+- variable: global.srLandingPageHostname
   description: Hostname for the landing page of Social Registry
   type: string
   label: Landing Page Hostname
   group: General Settings
 
-- variable: hostname
-  description: Hostname to access Social Registry Admin 
+- variable: global.srAdminHostname
+  description: Hostname to access Social Registry Admin
   type: string
   label: Hostname
   group: General Settings
@@ -18,13 +17,13 @@ questions:
   label: Keycloak Base URL
   group: General Settings
 
-- variable: odoo.oidcClientId
+- variable: global.srOdooOidcClientId
   description: OIDC Client ID for Social Registry
   type: string
   label: OIDC Client ID
   group: General Settings
 
-- variable: odoo.oidcClientSecret
+- variable: global.srOdooOidcClientSecret
   description: OIDC Client Secret for Social Registry
   type: string
   label: OIDC Client Secret
@@ -52,7 +51,7 @@ questions:
   label: Install ODK Central?
   group: ODK Central Settings
 
-- variable: odk-central.hostname
+- variable: global.srOdkCentralHostname
   description: Hostname for ODK Central
   type: string
   label: ODK Central Hostname
@@ -87,7 +86,7 @@ questions:
   label: Install Minio?
   group: Minio Settings
 
-- variable: minio.hostname
+- variable: global.srMinioHostname
   description: Hostname for Minio Console
   type: string
   label: Minio Console Hostname
@@ -108,19 +107,82 @@ questions:
   group: Minio Settings
   show_if: "minio.enabled=true"
 
+# Kafka Settings
+- variable: kafka.enabled
+  description: This installs Kafka along with SR (Required for Reporting and eSignet)
+  type: boolean
+  label: Install Kafka?
+  group: Kafka Settings
+
+- variable: kafkaUi.enabled
+  description: This installs Kafka UI along with Kafka
+  type: boolean
+  label: Install Kafka UI?
+  group: Kafka Settings
+  show_if: "kafka.enabled=true"
+
+- variable: global.srKafkaUiHostname
+  description: Hostname with which Kafka UI should be accessible
+  type: string
+  label: Kafka UI Hostname
+  group: Kafka Settings
+  show_if: "kafka.enabled=true&&kafkaUi.enabled=true"
+
+- variable: kafkaUi.oidcClientId
+  description: OIDC Client ID for Kafka UI login
+  type: string
+  label: Kafka OIDC Client ID
+  group: Kafka Settings
+  show_if: "kafka.enabled=true&&kafkaUi.enabled=true"
+
+- variable: kafkaUi.oidcClientSecret
+  description: OIDC Client Secret for Kafka UI login
+  type: string
+  label: Kafka OIDC Client Secret
+  group: Kafka Settings
+  show_if: "kafka.enabled=true&&kafkaUi.enabled=true"
+
+# OpenSearch Settings
+- variable: opensearch.enabled
+  description: This installs OpenSearch along with SR (Required for Searching, Reporting, and Logs capture)
+  type: boolean
+  label: Install OpenSearch?
+  group: OpenSearch Settings
+
+- variable: global.srOpensearchHostname
+  description: Hostname for OpenSearch Dashboards
+  type: string
+  label: OpenSearch Dashboards Hostname
+  group: OpenSearch Settings
+  show_if: "opensearch.enabled=true"
+
+- variable: opensearch.oidcClientId
+  description: OIDC Client ID for OpenSearch login
+  type: string
+  label: OIDC Client ID
+  group: OpenSearch Settings
+  show_if: "opensearch.enabled=true"
+
+- variable: opensearch.oidcClientSecret
+  description: OIDC Client Secret for OpenSearch login
+  type: string
+  label: OIDC Client Secret
+  group: OpenSearch Settings
+  show_if: "opensearch.enabled=true"
+
+- variable: opensearch.loggingOutput.enabled
+  description: This will only allow Fluentd to send logs into this OpenSearch. (To enable capturing logs see Logging Settings)
+  type: boolean
+  label: Fluentd Logs Output?
+  group: OpenSearch Settings
+  show_if: "opensearch.enabled=true"
+
 # Logging Settings
 - variable: loggingFlow.enabled
-  description: This will allow Fluentd to capture logs into OpenSearch.
+  description: This will enable Fluentd to capture logs into OpenSearch.
   type: boolean
   label: Enable logs capture?
   group: Logging Settings
-
-- variable: loggingOpensearch.enabled
-  description: This installs OpenSearch for logging
-  type: boolean
-  label: Install OpenSearch?
-  group: Logging Settings
-  # show_if: "loggingFlow.enabled=true"
 
 - variable: loggingFlow.opensearchInstallationName
   description: |-
@@ -129,35 +191,7 @@ questions:
   type: reference_service
   label: Existing OpenSearch Installation Name
   group: Logging Settings
-  show_if: "loggingOpensearch.enabled=false&&loggingFlow.enabled=true"
-
-- variable: loggingOpensearch.hostname
-  description: Hostname for OpenSearch Dashboards
-  type: string
-  label: OpenSearch Dashboards Hostname
-  group: Logging Settings
-  show_if: "loggingOpensearch.enabled=true&&loggingFlow.enabled=true"
-
-- variable: loggingOpensearch.oidcClientId
-  description: OIDC Client ID for OpenSearch login
-  type: string
-  label: OIDC Client ID
-  group: Logging Settings
-  show_if: "loggingOpensearch.enabled=true&&loggingFlow.enabled=true"
-
-- variable: loggingOpensearch.oidcClientSecret
-  description: OIDC Client Secret for OpenSearch login
-  type: string
-  label: OIDC Client Secret
-  group: Logging Settings
-  show_if: "loggingOpensearch.enabled=true&&loggingFlow.enabled=true"
-
-- variable: loggingOpensearch.loggingOutput.enabled
-  description: This will allow Fluentd to send logs into this OpenSearch.
-  type: boolean
-  label: Fluentd Logs Output?
-  group: Logging Settings
-  show_if: "loggingOpensearch.enabled=true&&loggingFlow.enabled=true"
+  show_if: "opensearch.enabled=false&&loggingFlow.enabled=true"
 
 # Keymanager
 - variable: keymanager.enabled
@@ -174,13 +208,6 @@ questions:
   label: Existing Keymanager Installation Name
   group: Keymanager Settings
   show_if: "keymanager.enabled=false"
-
-- variable: keymanager.hostname
-  description: Hostname under which Keymanager should be accessible
-  type: string
-  label: Keymanager Hostname
-  group: Keymanager Settings
-  show_if: "keymanager.enabled=true"
 
 - variable: keymanager.springConfig.profile
   type: string
@@ -234,6 +261,50 @@ questions:
   group: Keymanager Settings
   show_if: "keymanager.enabled=true"
 
+# IDGenerator Settings
+- variable: idgenerator.enabled
+  description: This installs ID Generator for generating unique IDs
+  type: boolean
+  label: Install ID Generator?
+  group: ID Generator Settings
+
+- variable: idgenerator.springCloudConfig.profile
+  type: string
+  label: Spring Config Profile
+  group: ID Generator Settings
+  show_if: "idgenerator.enabled=true"
+
+- variable: idgenerator.springCloudConfig.enabled
+  description: Enables Spring Cloud Config (config-server) (Config from Git repo).
+  type: boolean
+  label: Spring Cloud Config Enabled
+  group: ID Generator Settings
+  show_if: "idgenerator.enabled=true"
+  show_subquestion_if: true
+  subquestions:
+  - variable: idgenerator.springCloudConfig.gitRepo.url
+    description: |-
+      Repo Url for remote Git repo containing configs.
+      This url should include username password if required.
+    type: string
+    label: Spring Cloud Config Git Repo Url
+    group: ID Generator Settings
+
+  - variable: idgenerator.springCloudConfig.gitRepo.branch
+    description: Branch of remote Git repo containing configs.
+    type: string
+    label: Spring Cloud Config Git Repo Branch
+    group: ID Generator Settings
+
+- variable: idgenerator.envVars.auth_server_admin_allowed_audience
+  description: |-
+    List of Keycloak Client ID allowed to call this idgenerator's APIs.
+    Do not edit this parameter unless required.
+  type: string
+  label: Allowed Keycloak Client IDs.
+  group: ID Generator Settings
+  show_if: "idgenerator.enabled=true"
+
 # Reporting
 - variable: reporting.enabled
   description: This installs Reporting Framework for that stream DB data to OpenSearch for Dashboards
@@ -256,49 +327,7 @@ questions:
   group: Reporting Settings
   show_if: "reporting.enabled=false&&reporting-init.enabled=true"
 
-# Reporting Kafka
-- variable: reporting.kafka.enabled
-  description: This installs Kafka along with the current reporting
-  type: boolean
-  label: Install Kafka?
-  group: Reporting Settings
-  show_if: "reporting.enabled=true"
-
-- variable: reporting.kafkaUi.enabled
-  description: This installs Kafka UI along with Kafka
-  type: boolean
-  label: Install Kafka UI?
-  group: Reporting Settings
-  show_if: "reporting.enabled=true&&reporting.kafka.enabled=true"
-
-- variable: reporting.kafkaUi.hostname
-  description: Hostname with which Kafka UI should be accessible
-  type: string
-  label: Kafka UI Hostname
-  group: Reporting Settings
-  show_if: "reporting.enabled=true&&reporting.kafka.enabled=true&&reporting.kafkaUi.enabled=true"
-
-- variable: reporting.kafkaUi.oidcClientId
-  description: OIDC Client ID for Kafka UI login
-  type: string
-  label: Kafka OIDC Client ID
-  group: Reporting Settings
-  show_if: "reporting.enabled=true&&reporting.kafka.enabled=true&&reporting.kafkaUi.enabled=true"
-
-- variable: reporting.kafkaUi.oidcClientSecret
-  description: OIDC Client Secret for Kafka UI login
-  type: string
-  label: Kafka OIDC Client Secret
-  group: Reporting Settings
-  show_if: "reporting.enabled=true&&reporting.kafka.enabled=true&&reporting.kafkaUi.enabled=true"
-
-- variable: reporting.opensearch.enabled
-  description: This installs OpenSearch for reporting
-  type: boolean
-  label: Install OpenSearch?
-  group: Reporting Settings
-  show_if: "reporting.enabled=true"
-
+# Reporting Init
 - variable: reporting-init.opensearchInstallationName
   description: |-
     Edit this only if you want to reuse existing OpenSearch Installation.
@@ -306,30 +335,8 @@ questions:
   type: reference_service
   label: Existing OpenSearch Installation Name
   group: Reporting Settings
-  show_if: "reporting.opensearch.enabled=false&&reporting.enabled=true"
+  show_if: "opensearch.enabled=false&&reporting.enabled=true"
 
-- variable: reporting.opensearch.hostname
-  description: Hostname for OpenSearch Dashboards
-  type: string
-  label: OpenSearch Dashboards Hostname
-  group: Reporting Settings
-  show_if: "reporting.opensearch.enabled=true&&reporting.enabled=true"
-
-- variable: reporting.opensearch.oidcClientId
-  description: OIDC Client ID for OpenSearch login
-  type: string
-  label: OpenSearch OIDC Client ID
-  group: Reporting Settings
-  show_if: "reporting.opensearch.enabled=true&&reporting.enabled=true"
-
-- variable: reporting.opensearch.oidcClientSecret
-  description: OIDC Client Secret for OpenSearch login
-  type: string
-  label: OpenSearch OIDC Client Secret
-  group: Reporting Settings
-  show_if: "reporting.opensearch.enabled=true&&reporting.enabled=true"
-
-# Reporting Init
 - variable: reporting-init.gitConfig.enabled
   description: This enables downloading connectors and other Reporting-init configuration from Git.
   type: boolean
@@ -357,3 +364,48 @@ questions:
   label: Git Config Repository Subdirectory
   group: Reporting Settings
   show_if: "reporting-init.enabled=true&&reporting-init.gitConfig.enabled=true"
+
+# Superset Settings
+- variable: global.srSupersetHostname
+  description: |-
+    Hostname for accessing Superset Dashboards.
+    Rest of the Superset config will continue in Pack 2.
+  type: string
+  label: Superset Hostname
+  group: Superset Settings
+  show_if: "superset.enabled=true"
+
+# OpenG2P SR BG Tasks
+- variable: openg2p-sr-bg-tasks.enabled
+  description: This installs SR BG Tasks.
+  type: boolean
+  label: Install SR BG Tasks?
+  group: SR BG Tasks Settings
+
+- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS
+  description: Max Id Generation Request Attempts
+  type: string
+  label: Max Id Generation Request Attempts
+  group: SR BG Tasks Settings
+  show_if: "openg2p-sr-bg-tasks.enabled=true"
+
+- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS
+  description: Max Id Update Request Attempts
+  type: string
+  label: Max Id Update Request Attempts
+  group: SR BG Tasks Settings
+  show_if: "openg2p-sr-bg-tasks.enabled=true"
+
+- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY
+  description: Res Partner Id Generation Frequency
+  type: string
+  label: Res Partner Id Generation Frequency
+  group: SR BG Tasks Settings
+  show_if: "openg2p-sr-bg-tasks.enabled=true"
+
+- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY
+  description: Res Partner Id Generation Update Frequency
+  type: string
+  label: Res Partner Id Generation Update Frequency
+  group: SR BG Tasks Settings
+  show_if: "openg2p-sr-bg-tasks.enabled=true"

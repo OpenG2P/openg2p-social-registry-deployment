@@ -12,7 +12,7 @@ questions:
   label: Install Superset?
   group: Superset Settings
 
-- variable: superset.hostname
+- variable: global.srSupersetHostname
   description: Hostname for Superset Dashboards
   type: string
   label: Superset Hostname
@@ -47,7 +47,7 @@ questions:
   label: Install eSignet?
   group: eSignet Settings
 
-- variable: esignet.hostname
+- variable: global.srEsignetHostname
   description: Hostname under which eSignet should be accessible
   type: string
   label: eSignet Hostname
@@ -118,41 +118,33 @@ questions:
   show_if: "esignet.enabled=true&&esignet.springConfig.gitRepo.enabled=false"
 
 # Mock Identity Settings
-- variable: esignet.mock-identity-system.enabled
-  description: This installs Mock Identity System with eSignet
+- variable: mock-identity-system.enabled
+  description: This installs Mock Identity System with eSignet (This is only relevant when esignet is installed.)
   type: boolean
   label: Install Mock Identity System?
   group: Mock Identity System Settings
-  show_if: "esignet.enabled=true"
 
-- variable: esignet.mock-identity-system.hostname
-  description: Hostname under which Mock Identity System should be accessible
-  type: string
-  label: Mock Identity System Hostname
-  group: Mock Identity System Settings
-  show_if: "esignet.enabled=true&&esignet.mock-identity-system.enabled=true"
-
-- variable: esignet.mock-identity-system.springConfig.profile
+- variable: mock-identity-system.springConfig.profile
   type: string
   label: Spring Config Profile
   group: Mock Identity System Settings
-  show_if: "esignet.enabled=true&&esignet.mock-identity-system.enabled=true"
+  show_if: "mock-identity-system.enabled=true"
 
-- variable: esignet.mock-identity-system.springConfig.names
+- variable: mock-identity-system.springConfig.names
   type: string
   label: Spring Config Names
   group: Mock Identity System Settings
-  show_if: "esignet.enabled=true&&esignet.mock-identity-system.enabled=true"
+  show_if: "mock-identity-system.enabled=true"
 
-- variable: esignet.mock-identity-system.springConfig.gitRepo.enabled
+- variable: mock-identity-system.springConfig.gitRepo.enabled
   description: Enables download of configs from Git repo.
   type: boolean
   label: Spring Config Git Enabled
   group: Mock Identity System Settings
-  show_if: "esignet.enabled=true&&esignet.mock-identity-system.enabled=true"
+  show_if: "mock-identity-system.enabled=true"
   show_subquestions_if: true
   subquestions:
-  - variable: esignet.mock-identity-system.springConfig.gitRepo.repoUrl
+  - variable: mock-identity-system.springConfig.gitRepo.repoUrl
     description: |-
       Repo Url for remote Git repo containing configs.
       This url should include username password if required.
@@ -160,53 +152,17 @@ questions:
     label: Spring Config Git Repo Url
     group: Mock Identity System Settings
 
-  - variable: esignet.mock-identity-system.springConfig.gitRepo.branch
+  - variable: mock-identity-system.springConfig.gitRepo.branch
     description: Branch of remote Git repo containing configs.
     type: string
     label: Spring Config Git Repo Branch
     group: Mock Identity System Settings
 
-- variable: esignet.mock-identity-system.springConfig.rawConfig
+- variable: mock-identity-system.springConfig.rawConfig
   description: |-
     If git-based config is disabled, the complete application.properties can be
     directly supplied here.
   type: yamlfile
   label: Spring Config application properties.
   group: Mock Identity System Settings
-  show_if: "esignet.enabled=true&&esignet.mock-identity-system.enabled=true&&esignet.mock-identity-system.springConfig.gitRepo.enabled=false"
-
-- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-workers.envVars.SR_CELERY_WORKERS_AUTH_CLIENT_ID
-  description: KeyCloak Client ID
-  type: string
-  label: KeyCloak Client ID
-  group: SR BG Tasks Settings
-
-- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-workers.envVars.SR_CELERY_WORKERS_AUTH_CLIENT_SECRET
-  description: KeyCloak Client Secret for SR Celery Worker
-  type: string
-  label: KeyCloak Client Secret
-  group: SR BG Tasks Settings
-
-- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS
-  description: Max Id Generation Request Attempts
-  type: string
-  label: Max Id Generation Request Attempts
-  group: SR BG Tasks Settings
-
-- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS
-  description: Max Id Update Request Attempts
-  type: string
-  label: Max Id Update Request Attempts
-  group: SR BG Tasks Settings
-
-- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY
-  description: Res Partner Id Generation Frequency
-  type: string
-  label: Res Partner Id Generation Frequency
-  group: SR BG Tasks Settings
-
-- variable: sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY
-  description: Res Partner Id Generation Update Frequency
-  type: string
-  label: Res Partner Id Generation Update Frequency
-  group: SR BG Tasks Settings
+  show_if: "mock-identity-system.enabled=true&&mock-identity-system.springConfig.gitRepo.enabled=false"
