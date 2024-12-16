@@ -1,6 +1,10 @@
-# OpenG2P Social Registry Helm Chart
+# OpenG2P Social Registry Helm Chart - Pack 1
 
-This helm contains the following components:
+Due Helm release size limitations (K8s secret, which is an etcd object,
+can't exceed 1MiB), the OpenG2P Social Regsitry helm chart has been split
+into two packs.
+
+This is the first pack. This pack contains the following components:
 
 - Social Registry Odoo Package (Odoo + PostgreSQL)
 - Mail SMTP server
@@ -10,7 +14,5 @@ This helm contains the following components:
 - ID Generator
 - OpenSearch
 - Reporting (Reporting Framework + Reporting Init)
-- Superset
-- eSignet (eSignet + Mock Identity System)
-
-Note: Before version 1.4.x, this chart was split into two parts. Since version 1.4.x there is only a single chart that installs all the required components.
+- SR Background Tasks
+- SR Landing Page
