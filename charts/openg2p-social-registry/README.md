@@ -13,3 +13,4 @@ This is the first part. This contains the following components:
 - Keymanager
 - OpenSearch
 - Reporting (Reporting Framework + Reporting Init)
+- SR Background Tasks

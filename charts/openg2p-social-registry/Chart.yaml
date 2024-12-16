@@ -6,8 +6,7 @@ version: 1.4.0-develop
 dependencies:
 - name: sr-landing
   version: 1.4.0-develop
-  repository: https://openg2p.github.io/openg2p-helm
-  condition: odoo.enabled
+  condition: sr-landing.enabled
 - name: odoo
   version: 26.2.9
   repository: oci://registry-1.docker.io/bitnamicharts
@@ -34,13 +33,22 @@ dependencies:
   repository: https://openg2p.github.io/openg2p-helm
   condition: keymanager.enabled
 - name: reporting
-  version: 0.0.0-develop
+  version: 1.2.0-develop
   repository: https://openg2p.github.io/openg2p-helm
   condition: reporting.enabled
 - name: reporting-init
-  version: 0.0.0-develop
+  version: 1.2.0-develop
   repository: https://openg2p.github.io/openg2p-helm
   condition: reporting-init.enabled
+- name: redis
+  alias: bgTasksRedis
+  version: 19.x.x
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: openg2p-sr-bg-tasks.enabled
+- name: openg2p-sr-bg-tasks
+  version: 1.0.0-develop
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: openg2p-sr-bg-tasks.enabled
 icon: https://openg2p.github.io/openg2p-helm/openg2p-logo.png
 annotations:
   catalog.cattle.io/display-name: "OpenG2P Social Registry - Part 1"

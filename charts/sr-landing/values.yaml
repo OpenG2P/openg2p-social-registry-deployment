@@ -11,7 +11,7 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-envVars: 
+envVars:
   SR_ADMIN_URL: "https://admin.explore.openg2p.org"
   SR_REPORTING_URL: "https://reporting.explore.openg2p.org"
   SR_LOGGING_URL: "https://reporting.explore.openg2p.org"
