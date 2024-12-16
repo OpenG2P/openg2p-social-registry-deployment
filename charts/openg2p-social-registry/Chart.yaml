@@ -2,11 +2,11 @@ apiVersion: v2
 name: openg2p-social-registry
 description: A Helm chart for OpenG2P Social Registry
 type: application
-version: 1.4.0-develop
+version: 2.0.0-develop
 dependencies:
 - name: sr-landing
-  version: 1.4.0-develop
-  condition: odoo.enabled
+  version: 2.0.0-develop
+  condition: sr-landing.enabled
 - name: odoo
   version: 26.2.9
   repository: oci://registry-1.docker.io/bitnamicharts
@@ -48,11 +48,11 @@ dependencies:
   repository: https://openg2p.github.io/openg2p-helm
   condition: idgenerator.enabled
 - name: reporting
-  version: 0.0.0-develop
+  version: 1.3.0-develop
   repository: https://openg2p.github.io/openg2p-helm
   condition: reporting.enabled
 - name: reporting-init
-  version: 0.0.0-develop
+  version: 1.3.0-develop
   repository: https://openg2p.github.io/openg2p-helm
   condition: reporting-init.enabled
 - name: redis

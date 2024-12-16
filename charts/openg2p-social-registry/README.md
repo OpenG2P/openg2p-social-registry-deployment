@@ -12,5 +12,7 @@ This helm contains the following components:
 - Reporting (Reporting Framework + Reporting Init)
 - Superset
 - eSignet (eSignet + Mock Identity System)
+- SR Background Tasks
+- SR Landing Page
 
-Note: Before version 1.4.x, this chart was split into two parts. Since version 1.4.x there is only a single chart that installs all the required components.
+Note: Helm chart versions lower than 2.x.x were split into two parts. For versions 2.x.x and higher, there is only a single chart that installs all the required components. No need to install P2.
