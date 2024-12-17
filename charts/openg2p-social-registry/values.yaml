@@ -34,8 +34,8 @@ odoo:
   extraAddonsUrlsToPull: ''
 
   image:
-    repository: openg2p/openg2p-social-registry-odoo-package
-    tag: 1.4
+    repository: openg2p/openg2p-social-registry-core
+    tag: 1.4.1
     pullPolicy: Always
 
   service:
@@ -646,7 +646,7 @@ reporting-init:
   gitConfig:
     enabled: true
     repoUrl: https://github.com/openg2p/openg2p-reporting
-    branch: develop
+    branch: v1.3.0
     subDir: "scripts/social-registry"
   envVars:
     DB_NAME: socialregistrydb
