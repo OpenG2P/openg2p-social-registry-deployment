@@ -16,11 +16,10 @@ global:
 
   sysAdminEmail: admin@openg2p.sandbox.net
 
-# This host name is for SR Odoo component
-hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
-
 odoo:
   enabled: true
+
+  hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
 
   oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
   oidcClientId: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
