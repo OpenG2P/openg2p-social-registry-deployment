@@ -142,6 +142,28 @@ odoo:
   - name: EXTRA_ADDONS_URLS_TO_PULL
     value: '{{ tpl .Values.extraAddonsUrlsToPull $ }}'
 
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: ""
+      gateway: "internal"
+      destination: '{{ include "common.names.fullname" . }}'
+      destinationPort: '{{ .Values.service.port }}'
+      prefix: /
+      rewriteUri: ""
+    gateway:
+      enabled: false
+      host: ""
+      ingressController:
+        istio: ingressgateway
+      httpTlsRedirect: true
+      httpEnabled: true
+      httpsEnabled: false
+      tls:
+        mode: SIMPLE
+        credentialName: ""
+
 mail:
   enabled: true
   mailname: openg2p.sandbox.net
@@ -463,7 +485,6 @@ kafkaUi:
     externalTrafficPolicy: Cluster
 
   image:
-    registry: docker.io
     repository: provectuslabs/kafka-ui
     tag: v0.7.2
     pullPolicy: Always
@@ -615,6 +636,9 @@ kafkaUi:
       enabled: true
       host: ""
       gateway: "internal"
+      # In the following destination properties the context is root not ".Values.kafka"
+      # nor ".Values.kafkaUi" unlike other subcharts (like minio and opensearch)
+      # because of difference in structure.
       destination: '{{ include "common.names.fullname" .Subcharts.kafka }}-ui'
       destinationPort: '{{ .Values.kafkaUi.service.port }}'
       prefix: /
@@ -672,7 +696,6 @@ loggingFlow:
 artifactory:
   enabled: true
   image:
-    registry: docker.io
     repository: mosipid/artifactory-server
     tag: 1.4.1-ES
   resources: {}
@@ -733,7 +756,6 @@ idgenerator:
 mosipKernelPostgresInit:
   enabled: true
   image:
-    registry: docker.io
     repository: mosipid/postgres-init
     tag: 1.2.0.1-B4
     pullPolicy: Always
@@ -871,8 +893,8 @@ superset:
       enabled: true
       host: ""
       gateway: "internal"
-      destination: '{{ .Release.Name }}-superset'
-      destinationPort: "8088"
+      destination: '{{ include "superset.fullname" . }}'
+      destinationPort: '{{ .Values.service.port }}'
     gateway:
       enabled: false
       host: ""
@@ -1006,27 +1028,137 @@ openg2p-sr-bg-tasks:
       SR_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
       SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
 
-sr-landing:
+landing:
   enabled: true
+  hostname: '{{ tpl .Values.global.srLandingPageHostname $ }}'
 
-istio:
-  enabled: true
-  virtualservice:
+  commonLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-landing'
+  commonAnnotations: {}
+  podLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-landing'
+  podAnnotations: {}
+
+  replicaCount: 1
+
+  service:
+    type: ClusterIP
+    port: 80
+    nodePorts:
+      http: ""
+      https: ""
+    externalTrafficPolicy: Cluster
+
+  image:
+    repository: openg2p/openg2p-social-registry-landing
+    tag: "develop"
+    pullPolicy: Always
+    pullSecrets: []
+
+  containerPort: 80
+
+  startupProbe:
     enabled: true
-    host: ""
-    gateway: "internal"
-    destination: '{{ include "common.names.fullname" .Subcharts.odoo }}'
-    destinationPort: '{{ .Values.odoo.service.port }}'
-    prefix: /
-    rewriteUri: ""
-  gateway:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+    successThreshold: 1
+
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  command: []
+  args: []
+
+  hostAliases: []
+
+  resources: {}
+
+  containerSecurityContext:
     enabled: false
-    host: ""
-    ingressController:
-      istio: ingressgateway
-    httpTlsRedirect: true
-    httpEnabled: true
-    httpsEnabled: false
-    tls:
-      mode: SIMPLE
-      credentialName: ""
+    runAsUser: 1001
+    runAsNonRoot: true
+
+  podSecurityContext:
+    enabled: false
+    fsGroup: 1001
+
+  podAffinityPreset: ""
+  podAntiAffinityPreset: soft
+  nodeAffinityPreset:
+    type: ""
+    key: ""
+    values: []
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+
+  priorityClassName: ""
+  lifecycleHooks: {}
+
+  updateStrategy:
+    type: RollingUpdate
+
+  initContainers: []
+  sidecars: []
+
+  extraVolumes: []
+  extraVolumeMounts: []
+
+  envVars:
+    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}'
+    SR_REPORTING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
+    SR_LOGGING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
+    SR_MINIO_URL: 'https://{{ tpl .Values.global.srMinioHostname $ }}'
+    SR_ODK_URL: 'https://{{ tpl .Values.global.srOdkCentralHostname $ }}'
+    SR_KAFKA_URL: 'https://{{ tpl .Values.global.srKafkaUiHostname $ }}'
+    SR_SUPERSET_URL: 'https://{{ tpl .Values.global.srSupersetHostname $ }}'
+    SR_VERSION: '{{ .Chart.Version }}'
+    SR_APP_VERSION: '{{ .Values.odoo.image.tag }}'
+
+  envVarsFrom: {}
+
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: ""
+      gateway: "internal"
+      destination: '{{ include "common.names.fullname" . }}-landing'
+      destinationPort: '{{ .Values.landing.service.port }}'
+      prefix: /
+      rewriteUri: ""
+    gateway:
+      enabled: false
+      host: ""
+      ingressController:
+        istio: ingressgateway
+      httpTlsRedirect: true
+      httpEnabled: true
+      httpsEnabled: false
+      tls:
+        mode: SIMPLE
+        credentialName: ""
