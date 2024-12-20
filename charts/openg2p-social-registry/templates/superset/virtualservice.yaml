@@ -25,9 +25,9 @@ spec:
           x-forwarded-proto: https
     route:
     - destination:
-        host: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destination "context" $) }}
+        host: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destination "context" .Subcharts.superset) }}
         port:
-          number: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destinationPort "context" $) }}
+          number: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destinationPort "context" .Subcharts.superset) }}
 {{- end }}
 {{- end }}
 {{- end }}
