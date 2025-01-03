@@ -33,7 +33,7 @@ odoo:
   extraAddonsUrlsToPull: ''
 
   image:
-    repository: openg2p/openg2p-social-registry-odoo-package
+    repository: openg2p/openg2p-social-registry-core
     tag: 1.4
     pullPolicy: Always
 
