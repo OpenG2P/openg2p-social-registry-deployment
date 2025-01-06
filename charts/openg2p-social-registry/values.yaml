@@ -34,7 +34,7 @@ odoo:
 
   image:
     repository: openg2p/openg2p-social-registry-core
-    tag: 1.4.3
+    tag: 1.4.4
     pullPolicy: Always
 
   service:
