@@ -1014,21 +1014,15 @@ websub:
     enabled: false
   kafkaInstallationName: '{{ .Release.Name }}-kafka'
 
-bgTasksRedis:
-  nameOverride: bg-tasks-redis
-  architecture: standalone
-  auth:
-    enabled: false
-  master:
-    resourcesPreset: none
-    persistence:
-      enabled: false
-
-openg2p-sr-bg-tasks:
+openg2p-registry-bg-tasks:
   enabled: true
   nameOverride: bg-tasks
 
-  openg2p-sr-bg-tasks-celery-beat-producers:
+  redis:
+    enabled: true
+    nameOverride: bg-tasks-redis
+
+  openg2p-registry-celery-beat-producers:
     enabled: true
     nameOverride: bg-tasks-producer
 
@@ -1036,12 +1030,21 @@ openg2p-sr-bg-tasks:
     redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
 
     envVars:
-      SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
-      SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
-      SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY: 60
-      SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY: 60
+      REGISTRY_CELERY_BEAT_DB_DBNAME: socialregistrydb
+      REGISTRY_CELERY_BEAT_DB_PORT: 5432
+      REGISTRY_CELERY_BEAT_DB_USERNAME: sruser
+      REGISTRY_CELERY_BEAT_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
+      REGISTRY_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+      REGISTRY_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+      REGISTRY_CELERY_BEAT_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
+      REGISTRY_CELERY_BEAT_REGISTRY_BEAT_PRODUCER_FREQUENCY: 60
+    envVarsFrom:
+      REGISTRY_CELERY_BEAT_DB_PASSWORD:
+        secretKeyRef:
+          name: '{{ tpl .Values.postgresqlInstallationName $ }}'
+          key: password
 
-  openg2p-sr-bg-tasks-celery-workers:
+  openg2p-registry-celery-workers:
     enabled: true
     nameOverride: bg-tasks-worker
 
@@ -1050,8 +1053,25 @@ openg2p-sr-bg-tasks:
     idgeneratorInstallationName: '{{ .Release.Name }}-idgenerator'
 
     envVars:
-      SR_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
-      SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
+      REGISTRY_CELERY_WORKERS_DB_DBNAME: socialregistrydb
+      REGISTRY_CELERY_WORKERS_DB_USERNAME: sruser
+      REGISTRY_CELERY_WORKERS_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
+      REGISTRY_CELERY_WORKERS_DB_PORT: 5432
+      REGISTRY_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+      REGISTRY_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+      REGISTRY_CELERY_WORKERS_AUTH_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
+      REGISTRY_CELERY_WORKERS_MOSIP_GET_UIN_URL: http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin
+      REGISTRY_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin
+      REGISTRY_CELERY_WORKERS_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
+
+    envVarsFrom:
+      REGISTRY_CELERY_WORKERS_DB_PASSWORD:
+        secretKeyRef:
+          name: '{{ tpl .Values.postgresqlInstallationName $ }}'
+          key: password
 
 landing:
   enabled: true
