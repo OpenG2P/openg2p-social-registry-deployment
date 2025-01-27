@@ -527,37 +527,73 @@ questions:
   group: Mock Identity System Settings
   show_if: "mock-identity-system.enabled=true&&mock-identity-system.springConfig.gitRepo.enabled=false"
 
-# OpenG2P SR BG Tasks
-- variable: openg2p-sr-bg-tasks.enabled
-  description: This installs SR BG Tasks.
+# Mimoto
+- variable: mimoto.enabled
+  description: Useful when testing VC Issuance with Inji wallet
   type: boolean
-  label: Install SR BG Tasks?
-  group: SR BG Tasks Settings
+  label: Install Mimoto?
+  group: Mimoto Settings
 
-- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS
-  description: Max Id Generation Request Attempts
+- variable: global.srMimotoHostname
+  description: Hostname under which Mimoto should be accessible
   type: string
-  label: Max Id Generation Request Attempts
-  group: SR BG Tasks Settings
-  show_if: "openg2p-sr-bg-tasks.enabled=true"
+  label: Mimoto Hostname
+  group: Mimoto Settings
+  show_if: "mimoto.enabled=true"
 
-- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS
-  description: Max Id Update Request Attempts
+- variable: mimoto.envVars.openg2p_pbms_base_url
+  description: |-
+    Required when same mimoto is used for both PBMS and SR. Leave default if PBMS is not required.
   type: string
-  label: Max Id Update Request Attempts
-  group: SR BG Tasks Settings
-  show_if: "openg2p-sr-bg-tasks.enabled=true"
+  label: PBMS Base Url
+  group: Mimoto Settings
+  show_if: "mimoto.enabled=true"
 
-- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY
-  description: Res Partner Id Generation Frequency
+- variable: mimoto.springCloudConfig.profile
   type: string
-  label: Res Partner Id Generation Frequency
-  group: SR BG Tasks Settings
-  show_if: "openg2p-sr-bg-tasks.enabled=true"
+  label: Spring Config Profile
+  group: Mimoto Settings
+  show_if: "mimoto.enabled=true"
 
-- variable: openg2p-sr-bg-tasks.openg2p-sr-bg-tasks-celery-beat-producers.envVars.SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY
-  description: Res Partner Id Generation Update Frequency
+- variable: mimoto.springCloudConfig.enabled
+  description: Enables Spring Cloud Config (config-server) (Config from Git repo).
+  type: boolean
+  label: Spring Cloud Config Enabled
+  group: Mimoto Settings
+  show_if: "mimoto.enabled=true"
+  show_subquestion_if: true
+  subquestions:
+  - variable: mimoto.springCloudConfig.gitRepo.url
+    description: |-
+      Repo Url for remote Git repo containing configs.
+      This url should include username password if required.
+    type: string
+    label: Spring Cloud Config Git Repo Url
+    group: Mimoto Settings
+
+  - variable: mimoto.springCloudConfig.gitRepo.branch
+    description: Branch of remote Git repo containing configs.
+    type: string
+    label: Spring Cloud Config Git Repo Branch
+    group: Mimoto Settings
+
+# Websub
+- variable: websub.enabled
+  description: Required for sharing data with external partners, like printing.
+  type: boolean
+  label: Install Websub?
+  group: Websub Settings
+
+- variable: global.srWebsubHostname
+  description: Hostname under which Websub should be accessible
   type: string
-  label: Res Partner Id Generation Update Frequency
-  group: SR BG Tasks Settings
-  show_if: "openg2p-sr-bg-tasks.enabled=true"
+  label: Websub Hostname
+  group: Websub Settings
+  show_if: "websub.enabled=true"
+
+# OpenG2P Registry Background Tasks
+- variable: openg2p-registry-bg-tasks.enabled
+  description: This installs Registry Background Tasks.
+  type: boolean
+  label: Install Registry Background Tasks?
+  group: Registry Background Tasks Settings
