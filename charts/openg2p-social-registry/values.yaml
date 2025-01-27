@@ -1002,7 +1002,7 @@ openg2p-registry-bg-tasks:
   enabled: true
   nameOverride: bg-tasks
 
-  redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis'
+  redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
 
   producer:
     enabled: true
