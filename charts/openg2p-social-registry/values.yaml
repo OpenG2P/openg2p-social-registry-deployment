@@ -991,7 +991,7 @@ mock-identity-system:
     rawConfig: ""
 
 mimoto:
-  enabled: true
+  enabled: false
   hostname: '{{ tpl .Values.global.srMimotoHostname $ }}'
   artifactory:
     enabled: false
@@ -1008,7 +1008,7 @@ mimoto:
     openg2p_pbms_base_url: https://pbms.openg2p.sandbox.net
 
 websub:
-  enabled: true
+  enabled: false
   hostname: '{{ tpl .Values.global.srWebsubHostname $ }}'
   kafka:
     enabled: false
