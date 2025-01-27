@@ -10,6 +10,8 @@ global:
   srSupersetHostname: superset-sr.openg2p.sandbox.net
   srEsignetHostname: esignet-sr.openg2p.sandbox.net
   srLandingPageHostname: socialregistry.openg2p.sandbox.net
+  srMimotoHostname: mimoto-sr.openg2p.sandbox.net
+  srWebsubHostname: websub-sr.openg2p.sandbox.net
 
   srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
   srOdooOidcClientSecret: ''
@@ -987,6 +989,30 @@ mock-identity-system:
       repoUrl: https://github.com/openg2p/mosip-config
       branch: master
     rawConfig: ""
+
+mimoto:
+  enabled: true
+  hostname: '{{ tpl .Values.global.srMimotoHostname $ }}'
+  artifactory:
+    enabled: false
+  artifactoryInstallationName: '{{ .Release.Name }}-artifactory'
+  springCloudConfig:
+    enabled: true
+    profile: default
+    gitRepo:
+      url: https://github.com/openg2p/mosip-config
+      branch: master
+  envVars:
+    mosip_esignet_host: '{{ tpl .Values.global.srEsignetHostname $ }}'
+    openg2p_social_registry_base_url: 'https://{{ tpl .Values.global.srAdminHostname $ }}'
+    openg2p_pbms_base_url: https://pbms.openg2p.sandbox.net
+
+websub:
+  enabled: true
+  hostname: '{{ tpl .Values.global.srWebsubHostname $ }}'
+  kafka:
+    enabled: false
+  kafkaInstallationName: '{{ .Release.Name }}-kafka'
 
 bgTasksRedis:
   nameOverride: bg-tasks-redis
