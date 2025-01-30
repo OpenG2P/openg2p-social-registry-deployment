@@ -10,8 +10,6 @@ global:
   srSupersetHostname: superset-sr.openg2p.sandbox.net
   srEsignetHostname: esignet-sr.openg2p.sandbox.net
   srLandingPageHostname: socialregistry.openg2p.sandbox.net
-  srMimotoHostname: mimoto-sr.openg2p.sandbox.net
-  srWebsubHostname: websub-sr.openg2p.sandbox.net
 
   srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
   srOdooOidcClientSecret: ''
@@ -990,88 +988,29 @@ mock-identity-system:
       branch: master
     rawConfig: ""
 
-mimoto:
-  enabled: false
-  hostname: '{{ tpl .Values.global.srMimotoHostname $ }}'
-  artifactory:
+bgTasksRedis:
+  nameOverride: bg-tasks-redis
+  architecture: standalone
+  auth:
     enabled: false
-  artifactoryInstallationName: '{{ .Release.Name }}-artifactory'
-  springCloudConfig:
-    enabled: true
-    profile: default
-    gitRepo:
-      url: https://github.com/openg2p/mosip-config
-      branch: master
-  envVars:
-    mosip_esignet_host: '{{ tpl .Values.global.srEsignetHostname $ }}'
-    openg2p_social_registry_base_url: 'https://{{ tpl .Values.global.srAdminHostname $ }}'
-    openg2p_pbms_base_url: https://pbms.openg2p.sandbox.net
-
-websub:
-  enabled: false
-  hostname: '{{ tpl .Values.global.srWebsubHostname $ }}'
-  kafka:
-    enabled: false
-  kafkaInstallationName: '{{ .Release.Name }}-kafka'
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: false
 
 openg2p-registry-bg-tasks:
   enabled: true
   nameOverride: bg-tasks
 
-  redis:
+  redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
+
+  producer:
     enabled: true
-    nameOverride: bg-tasks-redis
-
-  openg2p-registry-celery-beat-producers:
+  worker:
     enabled: true
-    nameOverride: bg-tasks-producer
-
-    postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
-    redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
-
     envVars:
-      REGISTRY_CELERY_BEAT_DB_DBNAME: socialregistrydb
-      REGISTRY_CELERY_BEAT_DB_PORT: 5432
-      REGISTRY_CELERY_BEAT_DB_USERNAME: sruser
-      REGISTRY_CELERY_BEAT_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
-      REGISTRY_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
-      REGISTRY_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
-      REGISTRY_CELERY_BEAT_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
-      REGISTRY_CELERY_BEAT_REGISTRY_BEAT_PRODUCER_FREQUENCY: 60
-    envVarsFrom:
-      REGISTRY_CELERY_BEAT_DB_PASSWORD:
-        secretKeyRef:
-          name: '{{ tpl .Values.postgresqlInstallationName $ }}'
-          key: password
-
-  openg2p-registry-celery-workers:
-    enabled: true
-    nameOverride: bg-tasks-worker
-
-    postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
-    redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
-    idgeneratorInstallationName: '{{ .Release.Name }}-idgenerator'
-
-    envVars:
-      REGISTRY_CELERY_WORKERS_DB_DBNAME: socialregistrydb
-      REGISTRY_CELERY_WORKERS_DB_USERNAME: sruser
-      REGISTRY_CELERY_WORKERS_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
-      REGISTRY_CELERY_WORKERS_DB_PORT: 5432
-      REGISTRY_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
-      REGISTRY_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
-      REGISTRY_CELERY_WORKERS_AUTH_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
       REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
       REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
-      REGISTRY_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
-      REGISTRY_CELERY_WORKERS_MOSIP_GET_UIN_URL: http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin
-      REGISTRY_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin
-      REGISTRY_CELERY_WORKERS_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
-
-    envVarsFrom:
-      REGISTRY_CELERY_WORKERS_DB_PASSWORD:
-        secretKeyRef:
-          name: '{{ tpl .Values.postgresqlInstallationName $ }}'
-          key: password
 
 landing:
   enabled: true
