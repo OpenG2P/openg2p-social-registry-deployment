@@ -1113,7 +1113,7 @@ landing:
   extraVolumeMounts: []
 
   envVars:
-    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}'
+    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}/web'
     SR_REPORTING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
     SR_LOGGING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
     SR_MINIO_URL: 'https://{{ tpl .Values.global.srMinioHostname $ }}'
