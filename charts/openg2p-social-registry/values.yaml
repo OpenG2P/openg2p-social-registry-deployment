@@ -669,7 +669,7 @@ reporting-init:
   gitConfig:
     enabled: true
     repoUrl: https://github.com/openg2p/openg2p-reporting
-    branch: develop
+    branch: v1.3.0
     subDir: "scripts/social-registry"
   envVars:
     DB_NAME: socialregistrydb
@@ -998,34 +998,19 @@ bgTasksRedis:
     persistence:
       enabled: false
 
-openg2p-sr-bg-tasks:
+openg2p-registry-bg-tasks:
   enabled: true
   nameOverride: bg-tasks
 
-  openg2p-sr-bg-tasks-celery-beat-producers:
+  redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
+
+  producer:
     enabled: true
-    nameOverride: bg-tasks-producer
-
-    postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
-    redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
-
-    envVars:
-      SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
-      SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
-      SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY: 60
-      SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY: 60
-
-  openg2p-sr-bg-tasks-celery-workers:
+  worker:
     enabled: true
-    nameOverride: bg-tasks-worker
-
-    postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
-    redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
-    idgeneratorInstallationName: '{{ .Release.Name }}-idgenerator'
-
     envVars:
-      SR_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
-      SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
 
 landing:
   enabled: true
@@ -1128,7 +1113,7 @@ landing:
   extraVolumeMounts: []
 
   envVars:
-    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}'
+    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}/web'
     SR_REPORTING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
     SR_LOGGING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
     SR_MINIO_URL: 'https://{{ tpl .Values.global.srMinioHostname $ }}'
