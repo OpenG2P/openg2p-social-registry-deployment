@@ -200,6 +200,13 @@ questions:
   label: Install Keymanager?
   group: Keymanager Settings
 
+- variable: keymanager.authEnabled
+  description: This enables auth for APIs Keymanager
+  type: boolean
+  label: Enable Keymanager API Auth?
+  group: Keymanager Settings
+  show_if: "keymanager.enabled=true
+
 - variable: odoo.keymanagerInstallationName
   description: |-
     Edit this only if you want to reuse existing Keymanager Installation.
@@ -259,7 +266,7 @@ questions:
   type: string
   label: Allowed Keycloak Client IDs.
   group: Keymanager Settings
-  show_if: "keymanager.enabled=true"
+  show_if: "keymanager.enabled=true&&keymanager.authEnabled=true"
 
 # IDGenerator Settings
 - variable: idgenerator.enabled

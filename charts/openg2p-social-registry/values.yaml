@@ -700,7 +700,7 @@ artifactory:
   resources: {}
 
 softhsm:
-  enabled: true
+  enabled: false
   # Hardcoding this for now. else every upgrade will reset the pin
   securityPIN: MTYwMzIyMjg=
   resources: {}
@@ -708,6 +708,7 @@ softhsm:
 keymanager:
   enabled: true
   hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
+  authEnabled: false
   springConfig:
     names: application,kernel
     profile: default
@@ -732,6 +733,10 @@ keymanager:
           name: '{{ .Release.Name }}-postgresql-addl-user-passwords'
           key: keymgruser
   keygen:
+    appIdsList:
+      - OPENG2P_SR
+    baseKeysList:
+      - "OPENG2P_SR:ENCRYPT"
     commonAnnotations:
       "helm.sh/hook-weight": "1"
 
