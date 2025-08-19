@@ -79,6 +79,13 @@ questions:
   group: ODK Central Settings
   show_if: "odk-central.enabled=true&&odk-central.backend.envVars.OIDC_ENABLED=true"
 
+- variable: odk-central.s3BlobsEnabled
+  description: This enables use of S3 (Minio) for storing form file uploads (blobs).
+  type: boolean
+  label: Enable Blobs store to S3
+  group: ODK Central Settings
+  show_if: "odk-central.enabled=true"
+
 # Minio Settings
 - variable: minio.enabled
   description: This installs Minio for document store.
@@ -209,6 +216,22 @@ questions:
   group: Keymanager Settings
   show_if: "keymanager.enabled=false"
 
+- variable: global.srKeymanagerAuthEnabled
+  label: API Authentication Enabled
+  description: Enables Keymanager API Authentication.
+  type: boolean
+  group: Keymanager Settings
+  show_if: "keymanager.enabled=true"
+
+- variable: keymanager.istio.enabled
+  label: Expose Keymanager APIs
+  description: >-
+    Enable this to manually download/upload certificates to Keymanager.
+    This exposes Keymanager APIs publicly outside Kubernetes.
+  type: boolean
+  group: Keymanager Settings
+  show_if: "keymanager.enabled=true"
+
 - variable: keymanager.springConfig.profile
   type: string
   label: Spring Config Profile
@@ -258,6 +281,30 @@ questions:
     Do not edit this parameter unless required.
   type: string
   label: Allowed Keycloak Client IDs.
+  group: Keymanager Settings
+  show_if: "keymanager.enabled=true&&global.srKeymanagerAuthEnabled=true"
+
+- variable: keymanager.keystoreType
+  label: Keystore Type
+  description: PKCS11 for HSM. PKCS12 for storing into local p12 file.
+  type: enum
+  options:
+    - PKCS11
+    - PKCS12
+  group: Keymanager Settings
+  show_if: "keymanager.enabled=true"
+
+- variable: keymanager.persistence.enabled
+  label: Persistence Enabled
+  description: Enable this if Keystore Type is PKCS12.
+  type: boolean
+  group: Keymanager Settings
+  show_if: "keymanager.enabled=true"
+
+- variable: softhsm.enabled
+  label: Install Softhsm?
+  description: Enable this if Keystore Type is PKCS11.
+  type: boolean
   group: Keymanager Settings
   show_if: "keymanager.enabled=true"
 
@@ -411,6 +458,20 @@ questions:
   description: Hostname under which eSignet should be accessible
   type: string
   label: eSignet Hostname
+  group: eSignet Settings
+  show_if: "esignet.enabled=true"
+
+- variable: softhsm.enabled
+  label: Install Softhsm?
+  description: Enabling this is mandatory for eSignet
+  type: boolean
+  group: eSignet Settings
+  show_if: "esignet.enabled=true"
+
+- variable: kafka.enabled
+  label: Install Kafka?
+  description: Enabling this is mandatory for eSignet
+  type: boolean
   group: eSignet Settings
   show_if: "esignet.enabled=true"
 
