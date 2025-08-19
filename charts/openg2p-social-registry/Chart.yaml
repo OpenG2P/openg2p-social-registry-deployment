@@ -17,9 +17,19 @@ dependencies:
   repository: oci://registry-1.docker.io/bitnamicharts
   condition: minio.enabled
 - name: odk-central
-  version: v2024.2.2
+  version: v2025.2.1
   repository: https://openg2p.github.io/openg2p-helm
   condition: odk-central.enabled
+- name: redis
+  alias: odk-central-enketo-redis-main
+  version: 19.x.x
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: odk-central-enketo-redis-main.enabled
+- name: redis
+  alias: odk-central-enketo-redis-cache
+  version: 19.x.x
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: odk-central-enketo-redis-cache.enabled
 - name: opensearch
   version: 1.2.0
   repository: oci://registry-1.docker.io/bitnamicharts
