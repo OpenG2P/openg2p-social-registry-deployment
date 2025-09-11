@@ -1,28 +1,42 @@
 global:
-  keycloakBaseUrl: https://keycloak.openg2p.sandbox.net
+  keycloakBaseUrl: https://keycloak.your.org
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
 
-  sysAdminEmail: admin@openg2p.sandbox.net
+  srAdminHostname: admin-sr.openg2p.sandbox.net
+  srOdkCentralHostname: odk-sr.openg2p.sandbox.net
+  srMinioHostname: minio-sr.openg2p.sandbox.net
+  srOpensearchHostname: opensearch-sr.openg2p.sandbox.net
+  srKafkaUiHostname: kafka-sr.openg2p.sandbox.net
+  srSupersetHostname: superset-sr.openg2p.sandbox.net
+  srEsignetHostname: esignet-sr.openg2p.sandbox.net
+  srLandingPageHostname: socialregistry.openg2p.sandbox.net
 
-hostname: socialregistry.openg2p.sandbox.net
+  srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
+  srOdooOidcClientSecret: ''
+
+  sysAdminEmail: admin@openg2p.sandbox.net
+  srKeymanagerAuthEnabled: false
+  srKeymanagerAppId: OPENG2P_SR
+  srKeymanagerNationalIDAppId: OPENG2P_SR_NID
 
 odoo:
   enabled: true
 
+  hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
+
   oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
-  oidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
-  oidcClientSecret: ''
+  oidcClientId: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
+  oidcClientSecret: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
 
   mailInstallationName: '{{ .Release.Name }}-mail'
   keymanagerInstallationName: '{{ .Release.Name }}-keymanager'
-  keymanagerAuthClientId: '{{ tpl .Values.oidcClientId $ }}'
-  keymanagerAuthClientSecret: '{{ tpl .Values.oidcClientSecret $ }}'
+  minioInstallationName: '{{ .Release.Name }}-minio'
 
   extraAddonsUrlsToPull: ''
 
   image:
-    repository: openg2p/openg2p-social-registry-odoo-package
-    tag: 17.0-develop
+    repository: openg2p/openg2p-social-registry-core
+    tag: 1.5
     pullPolicy: Always
 
   service:
@@ -31,25 +45,79 @@ odoo:
 
   # TODO: Remove this and use global.sysAdminEmail
   odooEmail: admin@openg2p.org
+  odooDatabaseFilter: ""
+
+  withoutDemo: all
+
+  loadDemoData: false  # This is redundant. Has no effect on inside the docker. Use withoutDemo instead.
+
+  diagnosticMode:
+    enabled: false  # Do not change this.
+
+  livenessProbe:
+    enabled: false
+
+  externalDatabase:
+    create: false  # This is hardcoded. Has no effect inside the docker.
+
+  containerSecurityContext:
+    enabled: false
+
+  podSecurityContext:
+    enabled: false
 
   postgresql:
     enabled: true
     auth:
       username: sruser
       database: socialregistrydb
+    additionalDbs:
+      enabled: true
+      userPasswordsExistingSecret: ""
+      userPasswords:
+        odkuser: ""
+        superset: superset
+        keymgruser: ""
+        kerneluser: ""
+        esignetuser: ""
+        mockidsystemuser: ""
     primary:
       extendedConfiguration: |-
         wal_level = logical
         max_wal_senders = 20
         max_replication_slots = 10
+      extraEnvVars:
+        - name: ADDL_DBS_ENABLED
+          value: '{{ .Values.additionalDbs.enabled | ternary "true" "false" }}'
+        - name: ADDL_DBS_USER_PASSWORD_odkuser
+          valueFrom:
+            secretKeyRef:
+              name: '{{ include "postgresql.v1.primary.fullname" . }}-addl-user-passwords'
+              key: odkuser
+        - name: ADDL_DBS_USER_PASSWORD_superset
+          valueFrom:
+            secretKeyRef:
+              name: '{{ include "postgresql.v1.primary.fullname" . }}-addl-user-passwords'
+              key: superset
+      # Extra DBs and Users create
+      initdb:
+        scripts:
+          create_dbs_and_users.sh: |-
+            #!/bin/bash
+            if [ "$ADDL_DBS_ENABLED" = "true" ]; then
+              PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -d postgres -c "CREATE ROLE odkuser WITH LOGIN NOSUPERUSER CREATEDB CREATEROLE INHERIT REPLICATION CONNECTION LIMIT -1 PASSWORD '"$ADDL_DBS_USER_PASSWORD_odkuser"';"
+              PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -d postgres -c "CREATE DATABASE odkdb WITH OWNER = odkuser TEMPLATE = template0 ENCODING = 'UTF8' TABLESPACE = pg_default CONNECTION LIMIT = -1;"
+              PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -d postgres -c "CREATE ROLE superset WITH LOGIN NOSUPERUSER CREATEDB CREATEROLE INHERIT REPLICATION CONNECTION LIMIT -1 PASSWORD '"$ADDL_DBS_USER_PASSWORD_superset"';"
+              PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -d postgres -c "CREATE DATABASE superset WITH OWNER = superset TEMPLATE = template0 ENCODING = 'UTF8' TABLESPACE = pg_default CONNECTION LIMIT = -1;"
+            fi
     istio:
-      enabled: true
+      enabled: false
       virtualservice:
         enabled: true
         host: "*"
         gateway: ""
         matchPort: 5432
-        destination: '{{ include "postgresql.v1.primary.fullname" .Subcharts.odoo.Subcharts.postgresql }}'
+        destination: '{{ include "postgresql.v1.primary.fullname" . }}'
         destinationPort: "5432"
       gateway:
         enabled: true
@@ -62,58 +130,83 @@ odoo:
           mode: SIMPLE
           credentialName: ""
 
-  livenessProbe:
-    enabled: false
+  extraEnvVars: '{{- include "socialRegistry.baseEnvVars" (dict "envVars" (merge (deepCopy .Values.envVars) (deepCopy .Values.envVarsFrom)) "context" $) }}'
 
-  # TODO: Template the following variables from helm values, instead of hardcoding
-  extraEnvVars:
-  - name: ODOO_SKIP_MODULES_UPDATE
-    value: "yes"
-  - name: LIMIT_TIME_REAL
-    value: "5000"
-  - name: LIST_DB
-    value: "False"
-  - name: SERVER_WIDE_MODULES
-    value: web,queue_job
-  # not using bitnami smtpHost and smtpPort variables, because they need user and pass as well.
-  - name: OPENG2P_SMTP_HOST
-    value: '{{ tpl .Values.mailInstallationName $ }}'
-  - name: OPENG2P_SMTP_PORT
-    value: "25"
-  - name: LOG_HANDLER
-    value: '[":INFO"]'
-  - name: LOG_DB
-    value: "False"
-  - name: KEYMANAGER_API_BASE_URL
-    value: 'http://{{ tpl .Values.keymanagerInstallationName $ }}/v1/keymanager'
-  - name: KEYMANAGER_AUTH_URL
-    value: '{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/token'
-  - name: KEYMANAGER_AUTH_CLIENT_ID
-    value: '{{ tpl .Values.keymanagerAuthClientId $ }}'
-  - name: KEYMANAGER_AUTH_CLIENT_SECRET
-    value: '{{ tpl .Values.keymanagerAuthClientSecret $ }}'
-  - name: EXTRA_ADDONS_URLS_TO_PULL
-    value: '{{ tpl .Values.extraAddonsUrlsToPull $ }}'
-
-keymanager:
-  enabled: true
-  hostname: keymanager-sr.openg2p.sandbox.net
-  springConfig:
-    names: application,kernel
-    profile: default
-    gitRepo:
-      enabled: true
-      repoUrl: https://github.com/openg2p/mosip-config
-      branch: master
-    rawConfig: ""
   envVars:
-    auth_server_admin_allowed_audience: 'openg2p-sr,openg2p-sr-{{ .Release.Namespace }},openg2p-pbms,openg2p-pbms-{{ .Release.Namespace }},openg2p-spar-{{ .Release.Namespace }}'
-  postgresInit:
-    commonAnnotations:
-      "helm.sh/hook-weight": "0"
-  keygen:
-    commonAnnotations:
-      "helm.sh/hook-weight": "1"
+    ODOO_SKIP_MODULES_UPDATE: yes
+    LIMIT_TIME_REAL: 5000
+    LIST_DB: False
+    SERVER_WIDE_MODULES: base,web,queue_job
+
+    # not using bitnami smtpHost and smtpPort variables, because of lack of templating
+    OPENG2P_SMTP_HOST: '{{ tpl .Values.mailInstallationName $ }}'
+    OPENG2P_SMTP_PORT: 25
+
+    LOG_HANDLER: "'':INFO''"
+    LOG_DB: False  # Do NOT use this. Use LOG_HANDLER instead.
+
+    ODOO_BOOTSTRAP_MODULES: >-
+      base,
+      g2p_auth_oidc_keycloak,
+      g2p_encryption_keymanager,
+      g2p_documents_bootstrap_s3,
+      g2p_disable_password_login,
+      g2p_profile_image,
+      g2p_portal_auth,
+      g2p_registry_membership,
+      g2p_social_registry,
+      g2p_social_registry_theme
+
+    EXTRA_ADDONS_URLS_TO_PULL: '{{ tpl .Values.extraAddonsUrlsToPull $ }}'
+
+    KEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.keymanagerInstallationName $ }}/v1/keymanager'
+    KEYMANAGER_AUTH_ENABLED: '{{ .Values.global.srKeymanagerAuthEnabled }}'
+    KEYMANAGER_AUTH_URL: '{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/token'
+    KEYMANAGER_AUTH_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
+    KEYMANAGER_AUTH_CLIENT_SECRET: '{{ tpl .Values.oidcClientSecret $ }}'
+    KEYMANAGER_ENCRYPT_APP_ID: '{{ tpl .Values.global.srKeymanagerAppId $ }}'
+    KEYMANAGER_ENCRYPT_REF_ID: "ENCRYPT"
+    KEYMANAGER_SIGN_APP_ID: '{{ tpl .Values.global.srKeymanagerAppId $ }}'
+    KEYMANAGER_SIGN_REF_ID: ""
+
+    KEYCLOAK_ISSUER_URL: '{{ tpl .Values.oidcIssuerUrl $ }}'
+    KEYCLOAK_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
+    KEYCLOAK_CLIENT_SECRET: '{{ tpl .Values.oidcClientSecret $ }}'
+
+    S3_URL: 'http://{{ tpl .Values.minioInstallationName $ }}:9000'
+    # S3_REGION: "other"  # For minio
+
+  envVarsFrom:
+    S3_ACCESS_KEY_ID:
+      secretKeyRef:
+        key: root-user
+        name: '{{ tpl .Values.minioInstallationName $ }}'
+    S3_SECRET_ACCESS_KEY:
+      secretKeyRef:
+        key: root-password
+        name: '{{ tpl .Values.minioInstallationName $ }}'
+
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: ""
+      gateway: "internal"
+      destination: '{{ include "common.names.fullname" . }}'
+      destinationPort: '{{ .Values.service.port }}'
+      prefix: /
+      rewriteUri: ""
+    gateway:
+      enabled: false
+      host: ""
+      ingressController:
+        istio: ingressgateway
+      httpTlsRedirect: true
+      httpEnabled: true
+      httpsEnabled: false
+      tls:
+        mode: SIMPLE
+        credentialName: ""
 
 mail:
   enabled: true
@@ -121,20 +214,52 @@ mail:
 
 odk-central:
   enabled: true
-  hostname: odk-sr.openg2p.sandbox.net
-  odk-central-mail:
-    enabled: true
-    # envVars:
+  hostname: '{{ tpl .Values.global.srOdkCentralHostname $ }}'
+
+  postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
+  mailInstallationName: '{{ .Release.Name }}-mail'
+
+  s3BlobsEnabled: true
+  minioInstallationName: '{{ .Release.Name }}-minio'
+
   backend:
     envVars:
-      OIDC_ENABLED: false
+      OIDC_ENABLED: true
       OIDC_ISSUER_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
       OIDC_CLIENT_ID: 'openg2p-sr-odk-{{ .Release.Namespace }}'
       OIDC_CLIENT_SECRET: ""
 
+    envVarsFrom:
+      DB_PASSWORD:
+        secretKeyRef:
+          name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+          key: odkuser
+
+odk-central-enketo-redis-main:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: true
+      size: 2Gi
+
+odk-central-enketo-redis-cache:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: true
+      size: 2Gi
+
 minio:
   enabled: true
-  hostname: minio-sr.openg2p.sandbox.net
+  hostname: '{{ tpl .Values.global.srMinioHostname $ }}'
   persistence:
     enabled: true
     size: 16Gi
@@ -167,7 +292,7 @@ minio:
       enabled: true
       host: ""
       gateway: "internal"
-      destination: '{{ include "common.names.fullname" .Subcharts.minio }}'
+      destination: '{{ include "common.names.fullname" . }}'
       destinationPort: "9001"
     gateway:
       enabled: false
@@ -181,13 +306,12 @@ minio:
         mode: SIMPLE
         credentialName: ""
 
-loggingOpensearch:
-  enabled: true
-  nameOverride: logging-opensearch
-  hostname: opensearch-logging-sr.openg2p.sandbox.net
+opensearch:
+  enabled: false
+  hostname: '{{ tpl .Values.global.srOpensearchHostname $ }}'
 
   oidcWellKnownConfigUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/.well-known/openid-configuration'
-  oidcClientId: 'openg2p-sr-logging-opensearch-{{ .Release.Namespace }}'
+  oidcClientId: 'openg2p-sr-opensearch-{{ .Release.Namespace }}'
   oidcClientSecret: ''
 
   master:
@@ -255,7 +379,7 @@ loggingOpensearch:
                 config:
                   subject_key: preferred_username
                   roles_key: client_roles
-                  openid_connect_url: '{{ tpl .Values.loggingOpensearch.oidcWellKnownConfigUrl $ }}'
+                  openid_connect_url: '{{ tpl .Values.oidcWellKnownConfigUrl $ }}'
               authentication_backend:
                 type: noop
             kerberos_auth_domain:
@@ -307,10 +431,10 @@ loggingOpensearch:
           - openid
           multiple_auth_enabled: true
         openid:
-          connect_url: '{{ tpl .Values.loggingOpensearch.oidcWellKnownConfigUrl $ }}'
-          client_id: '{{ tpl .Values.loggingOpensearch.oidcClientId $ }}'
-          client_secret: '{{ tpl .Values.loggingOpensearch.oidcClientSecret $ }}'
-          base_redirect_url: 'https://{{ .Values.loggingOpensearch.hostname }}'
+          connect_url: '{{ tpl .Values.oidcWellKnownConfigUrl $ }}'
+          client_id: '{{ tpl .Values.oidcClientId $ }}'
+          client_secret: '{{ tpl .Values.oidcClientSecret $ }}'
+          base_redirect_url: 'https://{{ tpl .Values.hostname $ }}'
           logout_url: ""
         ui:
           openid:
@@ -330,13 +454,13 @@ loggingOpensearch:
     enabled: true
     type: opensearch
     scheme: https
-    host: '{{ include "common.names.fullname" .Subcharts.loggingOpensearch }}.{{ .Release.Namespace }}'
+    host: '{{ include "common.names.fullname" . }}.{{ .Release.Namespace }}'
     port: "9200"
     user: logstash
     passwordFrom:
       secretKeyRef:
         key: logstash-password
-        name: '{{ include "common.names.fullname" .Subcharts.loggingOpensearch }}'
+        name: '{{ include "common.names.fullname" . }}'
     extraConfig:
       ssl_verify: false
       logstash_format: true
@@ -351,7 +475,7 @@ loggingOpensearch:
       enabled: true
       host: ""
       gateway: "internal"
-      destination: '{{ include "common.names.fullname" .Subcharts.loggingOpensearch }}-dashboards'
+      destination: '{{ include "common.names.fullname" . }}-dashboards'
       destinationPort: "5601"
     gateway:
       enabled: false
@@ -365,25 +489,252 @@ loggingOpensearch:
         mode: SIMPLE
         credentialName: ""
 
+kafka:
+  enabled: false
+  heapOpts: ""
+  extraConfig: |-
+    log.retention.hours=2
+    default.replication.factor=1
+    offsets.topic.replication.factor=1
+    transaction.state.log.replication.factor=1
+    auto.create.topics.enable=true
+    delete.topic.enable=true
+    num.partitions=3
+  controller:
+    heapOpts: ""
+    replicaCount: 1
+    resourcesPreset: "none"
+  broker:
+    heapOpts: ""
+    persistence:
+      enabled: false
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+    interbroker:
+      protocol: PLAINTEXT
+    external:
+      protocol: PLAINTEXT
+  service:
+    ports:
+      client: 9092
+
+kafkaUi:
+  enabled: false
+  # kafka.nameOverride will apply here too.
+  hostname: '{{ tpl .Values.global.srKafkaUiHostname $ }}'
+
+  basePath: ""
+
+  kafkaBootstrapServers: '{{ include "common.names.fullname" .Subcharts.kafka }}:9092'
+  debeziumAddress: '{{ .Release.Name }}-reporting-debezium'
+  opensearchKafkaConnectorAddress: '{{ .Release.Name }}-reporting-os-kafka-connector'
+
+  oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
+  oidcClientId: 'openg2p-sr-kafka-{{ .Release.Namespace }}'
+  oidcClientSecret: ''
+
+  commonLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-ui'
+  commonAnnotations: {}
+  podLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-ui'
+  podAnnotations: {}
+
+  replicaCount: 1
+
+  service:
+    type: ClusterIP
+    port: 80
+    nodePorts:
+      http: ""
+      https: ""
+    externalTrafficPolicy: Cluster
+
+  image:
+    repository: provectuslabs/kafka-ui
+    tag: v0.7.2
+    pullPolicy: Always
+    pullSecrets: []
+
+  containerPort: 8080
+
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: '{{ tpl .Values.kafkaUi.basePath $ }}/actuator/health'
+      port: 8080
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+    successThreshold: 1
+
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: '{{ tpl .Values.kafkaUi.basePath $ }}/actuator/health'
+      port: 8080
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: '{{ tpl .Values.kafkaUi.basePath $ }}/actuator/health'
+      port: 8080
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  command: []
+  args: []
+
+  hostAliases: []
+
+  resources: {}
+  # javaOpts: "-Xms256M -Xmx2G"
+  javaOpts: ""
+
+  containerSecurityContext:
+    enabled: false
+    runAsUser: 1001
+    runAsNonRoot: true
+
+  podSecurityContext:
+    enabled: false
+    fsGroup: 1001
+
+  podAffinityPreset: ""
+  podAntiAffinityPreset: soft
+  nodeAffinityPreset:
+    type: ""
+    key: ""
+    values: []
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+
+  priorityClassName: ""
+  lifecycleHooks: {}
+
+  updateStrategy:
+    type: RollingUpdate
+
+  initContainers: []
+  sidecars: []
+
+  extraVolumes: []
+  extraVolumeMounts: []
+
+  envVars:
+    JDK_JAVA_OPTIONS: '{{ tpl .Values.kafkaUi.javaOpts $ }}'
+    SERVER_SERVLET_CONTEXT_PATH: '{{ tpl .Values.kafkaUi.basePath $ }}'
+    SPRING_CONFIG_ADDITIONAL-LOCATION: '/kafka-ui/config.yml'
+  envVarsFrom: {}
+
+  configYml: |-
+    server:
+      max-http-header-size: "200000"
+    kafka:
+      clusters:
+      - name: main
+        bootstrapServers: '{{ tpl .Values.kafkaUi.kafkaBootstrapServers $ }}'
+        kafkaConnect:
+        - name: debezium
+          address: 'http://{{ tpl .Values.kafkaUi.debeziumAddress $ }}'
+        - name: opensearch-kafka-connector
+          address: 'http://{{ tpl .Values.kafkaUi.opensearchKafkaConnectorAddress $ }}'
+    auth:
+      type: OAUTH2
+      oauth2:
+        client:
+          keycloak:
+            clientId: '{{ tpl .Values.kafkaUi.oidcClientId $ }}'
+            clientSecret: '{{ tpl .Values.kafkaUi.oidcClientSecret $ }}'
+            scope: ["openid","profile","email"]
+            authorization-grant-type: authorization_code
+            issuer-uri: '{{ tpl .Values.kafkaUi.oidcIssuerUrl $ }}'
+            jwk-set-uri: '{{ tpl .Values.kafkaUi.oidcIssuerUrl $ }}/protocol/openid-connect/certs'
+            user-name-attribute: email
+            client-name: Keycloak
+            provider: keycloak
+            custom-params:
+              type: oauth
+              roles-field: client_roles
+    rbac:
+      roles:
+        - name: "admins"
+          clusters: ["main"]
+          subjects:
+            - provider: oauth
+              type: role
+              value: "Admin"
+          permissions:
+            - resource: applicationconfig
+              actions: all
+            - resource: clusterconfig
+              actions: all
+            - resource: topic
+              value: ".*"
+              actions: all
+            - resource: consumer
+              value: ".*"
+              actions: all
+            - resource: schema
+              value: ".*"
+              actions: all
+            - resource: connect
+              value: ".*"
+              actions: all
+            - resource: ksql
+              actions: all
+            - resource: acl
+              actions: all
+
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: ""
+      gateway: "internal"
+      # In the following destination properties the context is root not ".Values.kafka"
+      # nor ".Values.kafkaUi" unlike other subcharts (like minio and opensearch)
+      # because of difference in structure.
+      destination: '{{ include "common.names.fullname" .Subcharts.kafka }}-ui'
+      destinationPort: '{{ .Values.kafkaUi.service.port }}'
+      prefix: /
+      rewriteUri: ""
+    gateway:
+      enabled: false
+      host: ""
+      ingressController:
+        istio: ingressgateway
+      httpTlsRedirect: true
+      httpEnabled: true
+      httpsEnabled: false
+      tls:
+        mode: SIMPLE
+        credentialName: ""
+
 reporting:
-  enabled: true
-  kafka:
+  enabled: false
+  debezium:
     enabled: true
-  kafkaUi:
+  opensearch-kafka-connector:
     enabled: true
-    hostname: kafka-reporting-sr.openg2p.sandbox.net
-    oidcClientId: 'openg2p-sr-reporting-kafka-{{ .Release.Namespace }}'
-    oidcClientSecret: ''
-  opensearch:
-    enabled: true
-    hostname: opensearch-reporting-sr.openg2p.sandbox.net
-    oidcClientId: 'openg2p-sr-reporting-opensearch-{{ .Release.Namespace }}'
-    oidcClientSecret: ''
 
 reporting-init:
-  enabled: true
+  enabled: false
   reportingInstallationName: '{{ .Release.Name }}-reporting'
-  opensearchInstallationName: '{{ .Release.Name }}-reporting-opensearch'
+  opensearchInstallationName: '{{ .Release.Name }}-opensearch'
   postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
   gitConfig:
     enabled: true
@@ -396,8 +747,8 @@ reporting-init:
     "helm.sh/hook-weight": "0"
 
 loggingFlow:
-  enabled: true
-  opensearchInstallationName: '{{ include "common.names.fullname" .Subcharts.loggingOpensearch }}'
+  enabled: false
+  opensearchInstallationName: '{{ .Release.Name }}-opensearch'
   outputRef: '{{ tpl .Values.loggingFlow.opensearchInstallationName $ }}'
   extraLocalOutputRefs: []
   globalOutputRefs: []
@@ -411,24 +762,470 @@ loggingFlow:
     reserve_data: true
   extraFilters: []
 
-istio:
+artifactory:
   enabled: true
-  virtualservice:
-    enabled: true
-    host: ""
-    gateway: "internal"
-    destination: '{{ include "common.names.fullname" .Subcharts.odoo }}'
-    destinationPort: '{{ .Values.odoo.service.port }}'
-    prefix: /
-    rewriteUri: ""
-  gateway:
+  image:
+    repository: mosipid/artifactory-server
+    tag: 1.4.1-ES
+  resources: {}
+
+softhsm:
+  enabled: false
+  # Hardcoding this for now. else every upgrade will reset the pin
+  securityPIN: MTYwMzIyMjg=
+  resources: {}
+
+keymanager:
+  enabled: true
+  hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
+  authEnabled: '{{ .Values.global.srKeymanagerAuthEnabled }}'
+  istio:
     enabled: false
-    host: ""
-    ingressController:
-      istio: ingressgateway
-    httpTlsRedirect: true
-    httpEnabled: true
-    httpsEnabled: false
-    tls:
-      mode: SIMPLE
-      credentialName: ""
+  keystoreType: PKCS12
+  springConfig:
+    names: application,kernel
+    profile: default
+    gitRepo:
+      enabled: true
+      repoUrl: https://github.com/openg2p/mosip-config
+      branch: master
+    rawConfig: ""
+  envVars:
+    auth_server_admin_allowed_audience: 'openg2p-sr,openg2p-sr-{{ .Release.Namespace }}'
+  envVarsFrom:
+    db_dbuser_password:
+      secretKeyRef:
+        name: '{{ .Release.Name }}-postgresql-addl-user-passwords'
+        key: keymgruser
+  postgresInit:
+    commonAnnotations:
+      "helm.sh/hook-weight": "0"
+    envVarsFrom:
+      DBUSER_PWD:
+        secretKeyRef:
+          name: '{{ .Release.Name }}-postgresql-addl-user-passwords'
+          key: keymgruser
+  keygen:
+    commonAnnotations:
+      "helm.sh/hook-weight": "1"
+    appIdsList:
+      - '{{ tpl .Values.global.srKeymanagerAppId $ }}'
+      - '{{ tpl .Values.global.srKeymanagerNationalIDAppId $ }}'
+    baseKeysList:
+      - '{{ tpl .Values.global.srKeymanagerAppId $ }}:ENCRYPT'
+      - '{{ tpl .Values.global.srKeymanagerNationalIDAppId $ }}:ENCRYPT'
+  persistence:
+    enabled: true
+
+idgenerator:
+  enabled: true
+  hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
+  springCloudConfig:
+    enabled: true
+    profile: default
+    gitRepo:
+      url: https://github.com/openg2p/mosip-config
+      branch: master
+  envVars:
+    auth_server_admin_allowed_audience: 'openg2p-sr,openg2p-sr-{{ .Release.Namespace }}'
+  envVarsFrom:
+    db_dbuser_password:
+      secretKeyRef:
+        name: '{{ .Release.Name }}-postgresql-addl-user-passwords'
+        key: kerneluser
+
+mosipKernelPostgresInit:
+  enabled: true
+  image:
+    repository: mosipid/postgres-init
+    tag: 1.2.0.1-B4
+    pullPolicy: Always
+  containerSecurityContext:
+    enabled: false
+  podSecurityContext:
+    enabled: false
+  commonAnnotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  command:
+    - bash
+  args:
+    - -c
+    - until pg_isready -h ${DB_SERVERIP} -p ${DB_PORT}; do sleep 3; done && ./postgres-init.sh
+
+  envVars:
+    MOSIP_DB_NAME: mosip_kernel
+    DB_SERVERIP: '{{ .Release.Name }}-postgresql'
+    DB_PORT: '5432'
+    SU_USER: postgres
+    DB_USER: kerneluser
+    DML_FLAG: '0'
+    GIT_REPO_URL: https://github.com/mosip/commons.git
+    GIT_BRANCH: v1.2.0.1
+  envVarsFrom:
+    SU_USER_PWD:
+      secretKeyRef:
+        name: '{{ .Release.Name }}-postgresql'
+        key: postgres-password
+    DBUSER_PWD:
+      secretKeyRef:
+        name: '{{ .Release.Name }}-postgresql-addl-user-passwords'
+        key: kerneluser
+
+superset:
+  enabled: true
+  hostname: '{{ tpl .Values.global.srSupersetHostname $ }}'
+
+  oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
+  oidcClientId: 'openg2p-sr-superset-{{ .Release.Namespace }}'
+  oidcClientSecret: ''
+
+  supersetSecretKey: ''
+
+  init:
+    createAdmin: false
+    jobAnnotations:
+      "helm.sh/hook-weight": "0"
+
+  postgresql:
+    enabled: false
+
+  redis:
+    enabled: false
+
+  supersetNode:
+    connections:
+      redis_host: '{{ .Release.Name }}-superset-redis-headless'
+      db_host: '{{ .Release.Name }}-postgresql'
+
+  bootstrapScript: |
+    #!/bin/bash
+    pip install authlib==1.3.0
+
+  configOverrides:
+    enable_oauth: |
+      SECRET_KEY = '{{ tpl .Values.supersetSecretKey $ }}' or 'OPENG2P_SUPER_SECRET_KEY'
+
+      # This will make sure the redirect_uri is properly computed, even with SSL offloading
+      ENABLE_PROXY_FIX = True
+
+      from flask_appbuilder.security.manager import AUTH_OAUTH
+      AUTH_TYPE = AUTH_OAUTH
+      OAUTH_PROVIDERS = [
+        {
+          "name": "keycloak",
+          "icon": "fa-key",
+          "token_key": "access_token",
+          "remote_app": {
+            "client_id": "{{ tpl .Values.oidcClientId $ }}",
+            "client_secret": "{{ tpl .Values.oidcClientSecret $ }}",
+            "api_base_url": "{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect",
+            "client_kwargs": {"scope": "email profile openid"},
+            "access_token_url": "{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/token",
+            "jwks_uri": "{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/certs",
+            "authorize_url": "{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/auth",
+            "request_token_url": None
+          },
+        }
+      ]
+
+      # Map Authlib roles to superset roles
+      AUTH_ROLES_MAPPING = {
+        "Public": ["Public"],
+        "Admin": ["Admin"],
+      }
+
+      AUTH_ROLES_SYNC_AT_LOGIN = True
+
+      # Will allow user self registration, allowing to create Flask users from Authorized User
+      AUTH_USER_REGISTRATION = True
+
+      # The default user self registration role
+      # AUTH_USER_REGISTRATION_ROLE = "Public"
+
+      from superset.security import SupersetSecurityManager
+      class CustomSsoSecurityManager(SupersetSecurityManager):
+        def oauth_user_info(self, provider, response=None):
+          if provider == "keycloak":
+            me = self.appbuilder.sm.oauth_remotes[provider].get(
+              "openid-connect/userinfo"
+            )
+            me.raise_for_status()
+            data = me.json()
+            return {
+              "username": data.get("preferred_username", ""),
+              "first_name": data.get("given_name", ""),
+              "last_name": data.get("family_name", ""),
+              "email": data.get("email", ""),
+              "role_keys": data.get("client_roles", []),
+            }
+          return {}
+
+      CUSTOM_SECURITY_MANAGER = CustomSsoSecurityManager
+      SESSION_COOKIE_HTTPONLY = True
+      SESSION_COOKIE_SECURE = True
+      SESSION_COOKIE_SAMESITE = None
+      TALISMAN_ENABLED = False
+
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: ""
+      gateway: "internal"
+      destination: '{{ include "superset.fullname" . }}'
+      destinationPort: '{{ .Values.service.port }}'
+    gateway:
+      enabled: false
+      host: ""
+      ingressController:
+        istio: ingressgateway
+      httpTlsRedirect: true
+      httpEnabled: true
+      httpsEnabled: false
+      tls:
+        mode: SIMPLE
+        credentialName: ""
+
+supersetRedis:
+  nameOverride: superset-redis
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: false
+
+esignetRedis:
+  nameOverride: esignet-redis
+  architecture: standalone
+  auth:
+    enabled: true
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: false
+
+esignet:
+  enabled: false
+  hostname: '{{ tpl .Values.global.srEsignetHostname $ }}'
+
+  captchaEnabled: false
+
+  envVars:
+    esignet_captcha_site_key: ''
+    esignet_captcha_secret_key: ''
+
+  envVarsFrom:
+    db_dbuser_password:
+      secretKeyRef:
+        name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+        key: esignetuser
+
+  postgresInit:
+    commonAnnotations:
+      "helm.sh/hook-weight": "0"
+    envVarsFrom:
+      DBUSER_PWD:
+        secretKeyRef:
+          name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+          key: esignetuser
+
+  springConfig:
+    names: application,esignet
+    profile: default
+    gitRepo:
+      enabled: true
+      repoUrl: https://github.com/openg2p/mosip-config
+      branch: master
+    rawConfig: ""
+
+mock-identity-system:
+  enabled: false
+  hostname: '{{ tpl .Values.global.srEsignetHostname $ }}'
+
+  envVarsFrom:
+    db_dbuser_password:
+      secretKeyRef:
+        name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+        key: mockidsystemuser
+
+  postgresInit:
+    commonAnnotations:
+      "helm.sh/hook-weight": "0"
+    envVarsFrom:
+      DBUSER_PWD:
+        secretKeyRef:
+          name: '{{ tpl .Values.postgresqlInstallationName $ }}-addl-user-passwords'
+          key: mockidsystemuser
+
+  springConfig:
+    names: application,mock-identity-system
+    profile: default
+    gitRepo:
+      enabled: true
+      repoUrl: https://github.com/openg2p/mosip-config
+      branch: master
+    rawConfig: ""
+
+bgTasksRedis:
+  nameOverride: bg-tasks-redis
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: false
+
+openg2p-registry-bg-tasks:
+  enabled: true
+  nameOverride: bg-tasks
+
+  redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
+
+  producer:
+    enabled: true
+  worker:
+    enabled: true
+    envVars:
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
+
+landing:
+  enabled: true
+  hostname: '{{ tpl .Values.global.srLandingPageHostname $ }}'
+
+  commonLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-landing'
+  commonAnnotations: {}
+  podLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-landing'
+  podAnnotations: {}
+
+  replicaCount: 1
+
+  service:
+    type: ClusterIP
+    port: 80
+    nodePorts:
+      http: ""
+      https: ""
+    externalTrafficPolicy: Cluster
+
+  image:
+    repository: openg2p/openg2p-social-registry-landing
+    tag: "develop"
+    pullPolicy: Always
+    pullSecrets: []
+
+  containerPort: 80
+
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+    successThreshold: 1
+
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  command: []
+  args: []
+
+  hostAliases: []
+
+  resources: {}
+
+  containerSecurityContext:
+    enabled: false
+    runAsUser: 1001
+    runAsNonRoot: true
+
+  podSecurityContext:
+    enabled: false
+    fsGroup: 1001
+
+  podAffinityPreset: ""
+  podAntiAffinityPreset: soft
+  nodeAffinityPreset:
+    type: ""
+    key: ""
+    values: []
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+
+  priorityClassName: ""
+  lifecycleHooks: {}
+
+  updateStrategy:
+    type: RollingUpdate
+
+  initContainers: []
+  sidecars: []
+
+  extraVolumes: []
+  extraVolumeMounts: []
+
+  envVars:
+    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}/web'
+    SR_REPORTING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
+    SR_LOGGING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
+    SR_MINIO_URL: 'https://{{ tpl .Values.global.srMinioHostname $ }}'
+    SR_ODK_URL: 'https://{{ tpl .Values.global.srOdkCentralHostname $ }}'
+    SR_KAFKA_URL: 'https://{{ tpl .Values.global.srKafkaUiHostname $ }}'
+    SR_SUPERSET_URL: 'https://{{ tpl .Values.global.srSupersetHostname $ }}'
+    SR_KEYCLOAK_ACCOUNT_CONSOLE_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/account'
+    SR_VERSION: '{{ .Chart.Version }}'
+    SR_APP_VERSION: '{{ .Values.odoo.image.tag }}'
+
+  envVarsFrom: {}
+
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: ""
+      gateway: "internal"
+      destination: '{{ include "common.names.fullname" . }}-landing'
+      destinationPort: '{{ .Values.landing.service.port }}'
+      prefix: /
+      rewriteUri: ""
+    gateway:
+      enabled: false
+      host: ""
+      ingressController:
+        istio: ingressgateway
+      httpTlsRedirect: true
+      httpEnabled: true
+      httpsEnabled: false
+      tls:
+        mode: SIMPLE
+        credentialName: ""

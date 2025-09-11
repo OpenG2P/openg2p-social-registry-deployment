@@ -1,6 +1,9 @@
 {{- if .Values.superset.enabled }}
 {{- if .Values.superset.istio.enabled }}
 {{- if .Values.superset.istio.virtualservice.enabled }}
+{{- $istioVsHostname := include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.host "context" .Subcharts.superset) }}
+{{- $mainHostname := include "common.tplvalues.render" (dict "value" .Values.superset.hostname "context" .Subcharts.superset) }}
+{{- $hostname := default $mainHostname $istioVsHostname }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -11,20 +14,20 @@ metadata:
   {{- end }}
 spec:
   hosts:
-  - {{ default .Values.superset.hostname .Values.superset.istio.virtualservice.host | quote }}
+  - {{ $hostname | quote }}
   gateways:
   - {{ default (include "common.names.fullname" .Subcharts.superset) .Values.superset.istio.virtualservice.gateway }}
   http:
   - headers:
       request:
         set:
-          x-forwarded-host: {{ default .Values.superset.hostname .Values.superset.istio.virtualservice.host | quote }}
+          x-forwarded-host: {{ $hostname | quote }}
           x-forwarded-proto: https
     route:
     - destination:
-        host: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destination "context" $) }}
+        host: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destination "context" .Subcharts.superset) }}
         port:
-          number: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destinationPort "context" $) }}
+          number: {{ include "common.tplvalues.render" (dict "value" .Values.superset.istio.virtualservice.destinationPort "context" .Subcharts.superset) }}
 {{- end }}
 {{- end }}
 {{- end }}

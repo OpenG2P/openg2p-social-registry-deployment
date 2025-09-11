@@ -1,15 +1,18 @@
-# OpenG2P Social Registry Helm Chart - Part 1
+# OpenG2P Social Registry Helm Chart
 
-As the maximum size of a helm chart cannot be more than 1MiB
-(each etcd object can only hold maximum of 1MiB unless configured otherwise),
-the OpenG2P Social Regsitry helm chart has been split into two parts.
-
-This is the first part. This contains the following components:
+This helm contains the following components:
 
 - Social Registry Odoo Package (Odoo + PostgreSQL)
 - Mail SMTP server
 - MinIO
 - ODK Central
 - Keymanager
+- ID Generator
 - OpenSearch
 - Reporting (Reporting Framework + Reporting Init)
+- Superset
+- eSignet (eSignet + Mock Identity System)
+- SR Background Tasks
+- SR Landing Page
+
+Note: Helm chart versions lower than 2.x.x were split into two parts. For versions 2.x.x and higher, there is only a single chart that installs all the required components. No need to install P2.

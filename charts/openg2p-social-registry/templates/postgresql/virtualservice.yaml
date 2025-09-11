@@ -20,9 +20,9 @@ spec:
     - port: {{ .Values.odoo.postgresql.istio.virtualservice.matchPort }}
     route:
     - destination:
-        host: {{ include "common.tplvalues.render" (dict "value" .Values.odoo.postgresql.istio.virtualservice.destination "context" $) }}
+        host: {{ include "common.tplvalues.render" (dict "value" .Values.odoo.postgresql.istio.virtualservice.destination "context" .Subcharts.odoo.Subcharts.postgresql) }}
         port:
-          number: {{ include "common.tplvalues.render" (dict "value" .Values.odoo.postgresql.istio.virtualservice.destinationPort "context" $) }}
+          number: {{ include "common.tplvalues.render" (dict "value" .Values.odoo.postgresql.istio.virtualservice.destinationPort "context" .Subcharts.odoo.Subcharts.postgresql) }}
 {{- end }}
 {{- end }}
 {{- end }}
