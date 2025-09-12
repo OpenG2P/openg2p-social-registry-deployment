@@ -17,6 +17,12 @@ questions:
   label: Keycloak Base URL
   group: General Settings
 
+- variable: global.postgresqlHost
+  description: Host name for Postgresql that is installed externally
+  type: string
+  label: Postgresql Hostname 
+  group: General Settings
+
 - variable: global.srOdooOidcClientId
   description: OIDC Client ID for Social Registry
   type: string

@@ -2,8 +2,11 @@ global:
   keycloakBaseUrl: https://keycloak.your.org
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
 
-  postgresqlHost: 
-  postgresqlPort:
+  postgresqlHost: openg2p-commons-postgresql 
+  postgresqlPort: 5432
+
+  opensearchInstallationName: openg2p-commons-opensearch
+  reportingInstallationName: openg2p-commons-reporting
 
   srAdminHostname: admin-sr.openg2p.sandbox.net
   srOdkCentralHostname: odk-sr.openg2p.sandbox.net
@@ -70,7 +73,7 @@ odoo:
   externalDatabase:
     create: true 
     database: socialregistrydb
-    host: openg2p-commons-postgresql 
+    host: '{{ tpl .Values.global.postgresqlHost $ }}'
     password: <password for DB>
     port: 5432
     user: socialregistryuser
@@ -155,9 +158,9 @@ odoo:
 
 reporting-init:
   enabled: false
-  reportingInstallationName: '{{ .Release.Name }}-reporting'
-  opensearchInstallationName: '{{ .Release.Name }}-opensearch'
-  postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
+  reportingInstallationName: '{{ tpl .Values.global.reportingInstallationName $ }}'
+  opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
+  postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
   gitConfig:
     enabled: true
     repoUrl: https://github.com/openg2p/openg2p-reporting
@@ -170,7 +173,7 @@ reporting-init:
 
 loggingFlow:
   enabled: false
-  opensearchInstallationName: '{{ .Release.Name }}-opensearch'
+  opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
   outputRef: '{{ tpl .Values.loggingFlow.opensearchInstallationName $ }}'
   extraLocalOutputRefs: []
   globalOutputRefs: []
@@ -198,7 +201,7 @@ idgenerator:
   envVarsFrom:
     db_dbuser_password:
       secretKeyRef:
-        name: '{{ .Release.Name }}-postgresql-addl-user-passwords'
+        name: '{{ tpl .Values.global.postgresqlHost $ }}--addl-user-passwords'
         key: kerneluser
 
 mosipKernelPostgresInit:
@@ -223,7 +226,7 @@ mosipKernelPostgresInit:
 
   envVars:
     MOSIP_DB_NAME: mosip_kernel
-    DB_SERVERIP: '{{ .Release.Name }}-postgresql'
+    DB_SERVERIP: '{{ tpl .Values.global.postgresqlHost $ }}'
     DB_PORT: '5432'
     SU_USER: postgres
     DB_USER: kerneluser
@@ -233,19 +236,28 @@ mosipKernelPostgresInit:
   envVarsFrom:
     SU_USER_PWD:
       secretKeyRef:
-        name: '{{ .Release.Name }}-postgresql'
+        name: '{{ tpl .Values.global.postgresqlHost $ }}'
         key: postgres-password
     DBUSER_PWD:
       secretKeyRef:
-        name: '{{ .Release.Name }}-postgresql-addl-user-passwords'
+        name: '{{ tpl .Values.global.postgresqlHost $ }}--addl-user-passwords'
         key: kerneluser
+
+redis:
+  nameOverride: '{{ .Release.Name }}-redis'
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resourcesPreset: none
+    persistence:
+      enabled: false
 
 openg2p-registry-bg-tasks:
   enabled: true
   nameOverride: bg-tasks
 
-    #redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
-  redisInstallationName: '{{ .Release.Name }}-bg-tasks-redis-master'
+  redisInstallationName: '{{ .Release.Name }}-redis'
 
   producer:
     enabled: true
