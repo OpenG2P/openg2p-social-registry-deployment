@@ -87,12 +87,6 @@ questions:
   show_if: "odk-central.enabled=true"
 
 # Minio Settings
-- variable: minio.enabled
-  description: This installs Minio for document store.
-  type: boolean
-  label: Install Minio?
-  group: Minio Settings
-
 - variable: global.srMinioHostname
   description: Hostname for Minio Console
   type: string
