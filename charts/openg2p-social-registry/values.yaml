@@ -8,18 +8,24 @@ global:
   opensearchInstallationName: openg2p-commons-opensearch
   reportingInstallationName: openg2p-commons-reporting
 
-  srAdminHostname: admin-sr.openg2p.sandbox.net
-  srOdkCentralHostname: odk-sr.openg2p.sandbox.net
-  srMinioHostname: minio-sr.openg2p.sandbox.net
-  srOpensearchHostname: opensearch-sr.openg2p.sandbox.net
-  srKafkaUiHostname: kafka-sr.openg2p.sandbox.net
-  srSupersetHostname: superset-sr.openg2p.sandbox.net
-  srLandingPageHostname: socialregistry.openg2p.sandbox.net
+  srAdminHostname: registry.devops.openg2p.org
+  srOdkCentralHostname: odk.devops.openg2p.org
+  srMinioHostname: minio.devops.openg2p.org
+  srOpensearchHostname: opensearch.devops.openg2p.org
+  srKafkaUiHostname: kafka.devops.openg2p.org
+  srSupersetHostname: superset.devops.openg2p.org
+  srLandingPageHostname: registry.devops.openg2p.org
 
-  srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
+  mailInstallationName: openg2p-commons-mail
+
+  srOdooOidcClientId: 'openg2p-registry-{{ .Release.Namespace }}'
   srOdooOidcClientSecret: ''
 
+  minioInstallationName: openg2p-commons-minio 
+
   sysAdminEmail: admin@openg2p.sandbox.net
+
+  keymanagerInstallationName: openg2p-commons-keymanager
   srKeymanagerAuthEnabled: false
   srKeymanagerAppId: OPENG2P_SR
 
@@ -32,9 +38,9 @@ odoo:
   oidcClientId: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
   oidcClientSecret: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
 
-  mailInstallationName: '{{ .Release.Name }}-mail'
-  keymanagerInstallationName: '{{ .Release.Name }}-keymanager'
-  minioInstallationName: '{{ .Release.Name }}-minio'
+    #mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
+    #keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
+    #minioInstallationName: '{{ tpl .Values.global.minioInstallationName $ }}' 
 
   extraAddonsUrlsToPull: ''
 
@@ -87,7 +93,7 @@ odoo:
     SERVER_WIDE_MODULES: base,web,queue_job
 
     # not using bitnami smtpHost and smtpPort variables, because of lack of templating
-    OPENG2P_SMTP_HOST: '{{ tpl .Values.mailInstallationName $ }}'
+    OPENG2P_SMTP_HOST: '{{ tpl .Values.global.mailInstallationName $ }}'
     OPENG2P_SMTP_PORT: 25
 
     LOG_HANDLER: "'':INFO''"
@@ -107,7 +113,7 @@ odoo:
 
     EXTRA_ADDONS_URLS_TO_PULL: '{{ tpl .Values.extraAddonsUrlsToPull $ }}'
 
-    KEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.keymanagerInstallationName $ }}/v1/keymanager'
+    KEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.global.keymanagerInstallationName $ }}/v1/keymanager'
     KEYMANAGER_AUTH_ENABLED: '{{ .Values.global.srKeymanagerAuthEnabled }}'
     KEYMANAGER_AUTH_URL: '{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/token'
     KEYMANAGER_AUTH_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
@@ -121,18 +127,18 @@ odoo:
     KEYCLOAK_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
     KEYCLOAK_CLIENT_SECRET: '{{ tpl .Values.oidcClientSecret $ }}'
 
-    S3_URL: 'http://{{ tpl .Values.minioInstallationName $ }}:9000'
+    S3_URL: 'http://{{ tpl .Values.global.minioInstallationName $ }}:9000'
     # S3_REGION: "other"  # For minio
 
   envVarsFrom:
     S3_ACCESS_KEY_ID:
       secretKeyRef:
         key: root-user
-        name: '{{ tpl .Values.minioInstallationName $ }}'
+        name: '{{ tpl .Values.global.minioInstallationName $ }}'
     S3_SECRET_ACCESS_KEY:
       secretKeyRef:
         key: root-password
-        name: '{{ tpl .Values.minioInstallationName $ }}'
+        name: '{{ tpl .Values.global.minioInstallationName $ }}'
 
   istio:
     enabled: true
@@ -188,7 +194,7 @@ loggingFlow:
   extraFilters: []
 
 idgenerator:
-  enabled: true
+  enabled: false
   hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
   springCloudConfig:
     enabled: true
@@ -205,7 +211,7 @@ idgenerator:
         key: kerneluser
 
 mosipKernelPostgresInit:
-  enabled: true
+  enabled: false
   image:
     repository: mosipid/postgres-init
     tag: 1.2.0.1-B4
@@ -240,7 +246,7 @@ mosipKernelPostgresInit:
         key: postgres-password
     DBUSER_PWD:
       secretKeyRef:
-        name: '{{ tpl .Values.global.postgresqlHost $ }}--addl-user-passwords'
+        name: '{{ tpl .Values.global.postgresqlHost $ }}-addl-user-passwords'
         key: kerneluser
 
 redis:
