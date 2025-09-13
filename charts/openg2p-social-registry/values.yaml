@@ -1,5 +1,5 @@
 global:
-  keycloakBaseUrl: https://keycloak.your.org
+  keycloakBaseUrl: https://keycloak.openg2p.org
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
 
   postgresqlHost: openg2p-commons-postgresql 
@@ -18,8 +18,9 @@ global:
 
   mailInstallationName: openg2p-commons-mail
 
-  srOdooOidcClientId: 'openg2p-registry-{{ .Release.Namespace }}'
-  srOdooOidcClientSecret: ''
+  srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
+  # CAUTION: hard coding!
+  srOdooOidcClientSecret: fS4I6uX1e5rHtqGyHb57VxyaNeUIsfqg
 
   minioInstallationName: openg2p-commons-minio 
 
@@ -38,9 +39,9 @@ odoo:
   oidcClientId: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
   oidcClientSecret: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
 
-    #mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
-    #keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
-    #minioInstallationName: '{{ tpl .Values.global.minioInstallationName $ }}' 
+  #mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
+  #keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
+  #minioInstallationName: '{{ tpl .Values.global.minioInstallationName $ }}' 
 
   extraAddonsUrlsToPull: ''
 
@@ -74,15 +75,18 @@ odoo:
     enabled: false
 
   postgresql:
-    enabled: true
+    enabled: false
 
   externalDatabase:
-    create: true 
+    create: true
     database: socialregistrydb
-    host: '{{ tpl .Values.global.postgresqlHost $ }}'
-    password: <password for DB>
+    #host: '{{ tpl .Values.global.postgresqlHost $ }}'
+    host: openg2p-commons-postgresql
+    #password:    
     port: 5432
-    user: socialregistryuser
+    user: sruser
+    existingSecret: openg2p-commons-postgresql-addl-user-passwords 
+    existingSecretPasswordKey: sruser
 
   extraEnvVars: '{{- include "socialRegistry.baseEnvVars" (dict "envVars" (merge (deepCopy .Values.envVars) (deepCopy .Values.envVarsFrom)) "context" $) }}'
 
@@ -250,7 +254,7 @@ mosipKernelPostgresInit:
         key: kerneluser
 
 redis:
-  nameOverride: '{{ .Release.Name }}-redis'
+  #nameOverride: '{{ .Release.Name }}-redis'
   architecture: standalone
   auth:
     enabled: false
@@ -260,7 +264,7 @@ redis:
       enabled: false
 
 openg2p-registry-bg-tasks:
-  enabled: true
+  enabled: false
   nameOverride: bg-tasks
 
   redisInstallationName: '{{ .Release.Name }}-redis'
@@ -274,7 +278,7 @@ openg2p-registry-bg-tasks:
       REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
 
 landing:
-  enabled: true
+  enabled: false
   hostname: '{{ tpl .Values.global.srLandingPageHostname $ }}'
 
   commonLabels:

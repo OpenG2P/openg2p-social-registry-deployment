@@ -18,7 +18,7 @@ dependencies:
   condition: reporting-init.enabled
 - name: redis
   version: 19.x.x
-  repository: oci://registry-1.docker.io/bitnamicharts
+  repository: https://openg2p.github.io/openg2p-helm
   condition: redis.enabled
 - name: openg2p-registry-bg-tasks
   version: 1.1.0-develop
