@@ -4,6 +4,8 @@ global:
 
   postgresqlHost: openg2p-commons-postgresql 
   postgresqlPort: 5432
+  registryOdooDatabase: registrydevopsdb
+  dbUser: registry-devops-user
 
   opensearchInstallationName: openg2p-commons-opensearch
   reportingInstallationName: openg2p-commons-reporting
@@ -19,8 +21,7 @@ global:
   mailInstallationName: openg2p-commons-mail
 
   srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
-  # CAUTION: hard coding!
-  srOdooOidcClientSecret: fS4I6uX1e5rHtqGyHb57VxyaNeUIsfqg
+  srOdooOidcClientSecret: ''
 
   minioInstallationName: openg2p-commons-minio 
 
@@ -39,9 +40,9 @@ odoo:
   oidcClientId: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
   oidcClientSecret: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
 
-  #mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
-  #keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
-  #minioInstallationName: '{{ tpl .Values.global.minioInstallationName $ }}' 
+  mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
+  keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
+  minioInstallationName: '{{ tpl .Values.global.minioInstallationName $ }}' 
 
   extraAddonsUrlsToPull: ''
 
@@ -74,19 +75,28 @@ odoo:
   podSecurityContext:
     enabled: false
 
+  # We are using external database, hence default postgres is disabled
   postgresql:
     enabled: false
 
   externalDatabase:
     create: true
-    database: socialregistrydb
-    #host: '{{ tpl .Values.global.postgresqlHost $ }}'
-    host: openg2p-commons-postgresql
-    #password:    
+    host: '{{ tpl .Values.global.postgresqlHost $ }}'
+    database: '{{ tpl .Values.global.registryOdooDatabase $ }}'
     port: 5432
+    #user: '{{ tpl .Values.global.dbUser $ }}'
     user: sruser
-    existingSecret: openg2p-commons-postgresql-addl-user-passwords 
-    existingSecretPasswordKey: sruser
+    # Provided via secrets below
+    password: ""
+    postgresqlPostgresUser: "postgres"
+    # Passed via secrets
+    postgresqlPostgresPassword: ""
+    # Important - the same secret should contain both below keys
+    existingSecret: openg2p-commons-postgresql
+    # The secret should be created before this installation is done 
+    #existingSecretPasswordKey: '{{ .Release.Name }}-{{ .Release.Namespace }}-user'
+    existingSecretPasswordKey: ''
+    existingSecretPostgresPasswordKey: postgres-password
 
   extraEnvVars: '{{- include "socialRegistry.baseEnvVars" (dict "envVars" (merge (deepCopy .Values.envVars) (deepCopy .Values.envVarsFrom)) "context" $) }}'
 
@@ -177,7 +187,9 @@ reporting-init:
     branch: develop
     subDir: "scripts/social-registry"
   envVars:
-    DB_NAME: socialregistrydb
+    # Same as Odoo DB
+    #DB_NAME: '{{ .Release.Name }}{{ .Release.Namespace }}db' 
+    DB_NAME: ''
   hookAnnotations:
     "helm.sh/hook-weight": "0"
 
@@ -211,7 +223,7 @@ idgenerator:
   envVarsFrom:
     db_dbuser_password:
       secretKeyRef:
-        name: '{{ tpl .Values.global.postgresqlHost $ }}--addl-user-passwords'
+        name: '{{ tpl .Values.global.postgresqlHost $ }}-addl-user-passwords'
         key: kerneluser
 
 mosipKernelPostgresInit:

@@ -1,6 +1,9 @@
 {{/*
 Render Env values section
 */}}
+{{- define "odoo.databaseName" -}}
+{{- .Values.global.registryDatabase -}}
+{{- end -}}
 {{- define "socialRegistry.baseEnvVars" -}}
 {{- $context := .context -}}
 {{- range $k, $v := .envVars }}
