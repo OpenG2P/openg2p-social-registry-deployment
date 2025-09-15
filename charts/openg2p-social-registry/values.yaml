@@ -5,8 +5,6 @@ global:
   postgresqlHost: openg2p-commons-postgresql 
   postgresqlPort: 5432
   registryOdooDatabase: registrydevopsdb
-  dbUser: registry-devops-user
-
   opensearchInstallationName: openg2p-commons-opensearch
   reportingInstallationName: openg2p-commons-reporting
 
@@ -81,20 +79,21 @@ odoo:
 
   externalDatabase:
     create: true
-    host: '{{ tpl .Values.global.postgresqlHost $ }}'
-    database: '{{ tpl .Values.global.registryOdooDatabase $ }}'
+    # Global postgresqlHost assigned in _helpers.tpl directly (otherwise it is not possible to pass to Odoo char)
+    host: ''
+    # Global registryOdooDatabase assigned in _helpers.tpl directly.
+    database: ''
     port: 5432
-    #user: '{{ tpl .Values.global.dbUser $ }}'
-    user: sruser
+    # Directly defined in _helpers.tpl: printf "%s-%s-user" .Release.Name .Release.Namespace
+    user: ''
     # Provided via secrets below
     password: ""
     postgresqlPostgresUser: "postgres"
     # Passed via secrets
     postgresqlPostgresPassword: ""
-    # Important - the same secret should contain both below keys
+    # The secrets below should be created before this installation is done. All keys within same secret. 
     existingSecret: openg2p-commons-postgresql
-    # The secret should be created before this installation is done 
-    #existingSecretPasswordKey: '{{ .Release.Name }}-{{ .Release.Namespace }}-user'
+    # Directly defined in _helpers.tpl: printf "%s-%s-user" .Release.Name .Release.Namespace
     existingSecretPasswordKey: ''
     existingSecretPostgresPasswordKey: postgres-password
 

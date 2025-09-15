@@ -4,6 +4,16 @@ Render Env values section
 {{- define "odoo.databaseName" -}}
 {{- .Values.global.registryDatabase -}}
 {{- end -}}
+{{- define "odoo.databaseHost" -}}
+{{- .Values.global.postgresqlHost -}}
+{{- end -}}
+{{- define "odoo.databaseSecretPasswordKey" -}}
+{{- printf "%s-%s-user" .Release.Name .Release.Namespace -}} 
+{{- end -}}
+{{- define "odoo.databaseUser" -}}
+{{- printf "%s-%s-user" .Release.Name .Release.Namespace -}} 
+{{- end -}}
+
 {{- define "socialRegistry.baseEnvVars" -}}
 {{- $context := .context -}}
 {{- range $k, $v := .envVars }}
