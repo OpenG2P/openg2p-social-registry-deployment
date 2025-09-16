@@ -2,7 +2,7 @@
 Render Env values section
 */}}
 {{- define "odoo.databaseName" -}}
-{{- .Values.global.registryDatabase -}}
+{{- printf "%s%sdb" .Release.Name .Release.Namespace -}}
 {{- end -}}
 {{- define "odoo.databaseHost" -}}
 {{- .Values.global.postgresqlHost -}}

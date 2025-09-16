@@ -4,7 +4,6 @@ global:
 
   postgresqlHost: openg2p-commons-postgresql 
   postgresqlPort: 5432
-  registryOdooDatabase: registrydevopsdb
   opensearchInstallationName: openg2p-commons-opensearch
   reportingInstallationName: openg2p-commons-reporting
 
@@ -81,7 +80,7 @@ odoo:
     create: true
     # Global postgresqlHost assigned in _helpers.tpl directly (otherwise it is not possible to pass to Odoo char)
     host: ''
-    # Global registryOdooDatabase assigned in _helpers.tpl directly.
+    # Directly defined in _helpers.tpl: {{- printf "%s%sdb" .Release.Name .Release.Namespace -}}
     database: ''
     port: 5432
     # Directly defined in _helpers.tpl: printf "%s-%s-user" .Release.Name .Release.Namespace
@@ -126,7 +125,7 @@ odoo:
 
     EXTRA_ADDONS_URLS_TO_PULL: '{{ tpl .Values.extraAddonsUrlsToPull $ }}'
 
-    KEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.global.keymanagerInstallationName $ }}/v1/keymanager'
+    eEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.global.keymanagerInstallationName $ }}/v1/keymanager'
     KEYMANAGER_AUTH_ENABLED: '{{ .Values.global.srKeymanagerAuthEnabled }}'
     KEYMANAGER_AUTH_URL: '{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/token'
     KEYMANAGER_AUTH_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
@@ -176,7 +175,7 @@ odoo:
         credentialName: ""
 
 reporting-init:
-  enabled: false
+  enabled: true
   reportingInstallationName: '{{ tpl .Values.global.reportingInstallationName $ }}'
   opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
   postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
@@ -186,9 +185,8 @@ reporting-init:
     branch: develop
     subDir: "scripts/social-registry"
   envVars:
-    # Same as Odoo DB
-    #DB_NAME: '{{ .Release.Name }}{{ .Release.Namespace }}db' 
-    DB_NAME: ''
+    # Same as odoo.externalDatabase.database
+    DB_NAME: '{{ tpl (printf "%s%sdb" .Release.Name .Release.Namespace) $ }}' 
   hookAnnotations:
     "helm.sh/hook-weight": "0"
 
