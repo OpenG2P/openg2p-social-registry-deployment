@@ -28,6 +28,23 @@ global:
   srKeymanagerAuthEnabled: false
   srKeymanagerAppId: OPENG2P_SR
 
+postgres-init:
+  enabled: true
+  postgresql:
+    host: '{{ .Values.global.postgresqlHost }}'
+    port: 5432
+    # Hard coding. Same as one defined under Odoo
+    existingSecret: openg2p-commons-postgresql
+    existingSecretPostgresPasswordKey: postgres-password
+  database:
+    # Same as db in Odoo - make sure any changes to the name are synced with Odoo definitions
+    name: '{{ .Release.Name }}_{{ .Release.Namespace }}_db'
+    user: '{{ .Release.Name}}_{{ .Release.Namespace }}_db_user'
+    # Same secret as Postgresql - the Odoo chart expects all keys in the same secret, hence we are forced to this
+    secret: openg2p-commons-postgresql
+    # As convention same as user 
+    secretUserPasswordKey: '{{ .Release.Name}}_{{ .Release.Namespace }}_db_user'
+
 odoo:
   enabled: true
 
@@ -80,9 +97,9 @@ odoo:
     create: true
     # Global postgresqlHost assigned in _helpers.tpl directly (otherwise it is not possible to pass to Odoo char)
     host: ''
+    port: 5432
     # Directly defined in _helpers.tpl: {{- printf "%s%sdb" .Release.Name .Release.Namespace -}}
     database: ''
-    port: 5432
     # Directly defined in _helpers.tpl: printf "%s-%s-user" .Release.Name .Release.Namespace
     user: ''
     # Provided via secrets below
