@@ -116,8 +116,10 @@ odoo:
   extraEnvVars: '{{- include "socialRegistry.baseEnvVars" (dict "envVars" (merge (deepCopy .Values.envVars) (deepCopy .Values.envVarsFrom)) "context" $) }}'
 
   envVars:
+    #ODOO_DATABASE_FILTER_OVERRIDE: "^registry_devops_db$"
     ODOO_SKIP_MODULES_UPDATE: yes
     LIMIT_TIME_REAL: 5000
+    # This disables Odoo showing selection of databases if there are multiple databases (in our case we have only one DB for this deployment
     LIST_DB: False
     SERVER_WIDE_MODULES: base,web,queue_job
 
@@ -130,15 +132,10 @@ odoo:
 
     ODOO_BOOTSTRAP_MODULES: >-
       base,
+      g2p_app_filter,
+      g2p_auth_oidc,
       g2p_auth_oidc_keycloak,
-      g2p_encryption_keymanager,
-      g2p_documents_bootstrap_s3,
-      g2p_disable_password_login,
-      g2p_profile_image,
-      g2p_portal_auth,
-      g2p_registry_membership,
-      g2p_social_registry,
-      g2p_social_registry_theme
+      g2p_registry
 
     EXTRA_ADDONS_URLS_TO_PULL: '{{ tpl .Values.extraAddonsUrlsToPull $ }}'
 
@@ -158,6 +155,7 @@ odoo:
 
     S3_URL: 'http://{{ tpl .Values.global.minioInstallationName $ }}:9000'
     # S3_REGION: "other"  # For minio
+    WAIT_FOR_POSTGRES: 180
 
   envVarsFrom:
     S3_ACCESS_KEY_ID:
@@ -281,6 +279,7 @@ mosipKernelPostgresInit:
 
 redis:
   #nameOverride: '{{ .Release.Name }}-redis'
+  enabled: false
   architecture: standalone
   auth:
     enabled: false
