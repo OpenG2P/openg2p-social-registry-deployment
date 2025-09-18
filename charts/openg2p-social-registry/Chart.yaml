@@ -9,7 +9,7 @@ dependencies:
   repository: https://openg2p.github.io/openg2p-helm
   condition: postgres-init.enabled
 - name: odoo
-  version: 26.2.9
+  version: 26.3.0
   repository: https://openg2p.github.io/openg2p-helm
   condition: odoo.enabled
 - name: idgenerator

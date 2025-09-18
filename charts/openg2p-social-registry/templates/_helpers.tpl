@@ -2,16 +2,23 @@
 Render Env values section
 */}}
 {{- define "odoo.databaseName" -}}
-{{- printf "%s_%s_db" .Release.Name .Release.Namespace -}}
+{{- printf "%s_db" .Release.Name -}}
 {{- end -}}
+
 {{- define "odoo.databaseHost" -}}
 {{- .Values.global.postgresqlHost -}}
 {{- end -}}
+
 {{- define "odoo.databaseSecretPasswordKey" -}}
-{{- printf "%s_%s_db_user" .Release.Name .Release.Namespace -}} 
+{{- printf "%s_db_user" .Release.Name -}} 
 {{- end -}}
+
 {{- define "odoo.databaseUser" -}}
-{{- printf "%s_%s_db_user" .Release.Name .Release.Namespace -}} 
+{{- printf "%s_db_user" .Release.Name -}} 
+{{- end -}}
+
+{{- define "odoo.databaseSecretName" -}}
+{{- .Release.Name -}}
 {{- end -}}
 
 {{- define "socialRegistry.baseEnvVars" -}}

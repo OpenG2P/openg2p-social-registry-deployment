@@ -38,12 +38,12 @@ postgres-init:
     existingSecretPostgresPasswordKey: postgres-password
   database:
     # Same as db in Odoo - make sure any changes to the name are synced with Odoo definitions
-    name: '{{ .Release.Name }}_{{ .Release.Namespace }}_db'
-    user: '{{ .Release.Name}}_{{ .Release.Namespace }}_db_user'
-    # Same secret as Postgresql - the Odoo chart expects all keys in the same secret, hence we are forced to this
-    secret: openg2p-commons-postgresql
+    name: '{{ .Release.Name }}_db'
+    user: '{{ .Release.Name}}_db_user'
+    # Same as odoo.externalDatabase.existingSecret - make sure these two are same if any changes are made.
+    secret: '{{ .Release.Name }}'
     # As convention same as user 
-    secretUserPasswordKey: '{{ .Release.Name}}_{{ .Release.Namespace }}_db_user'
+    secretUserPasswordKey: '{{ .Release.Name}}_db_user'
 
 odoo:
   enabled: true
@@ -98,25 +98,26 @@ odoo:
     # Global postgresqlHost assigned in _helpers.tpl directly (otherwise it is not possible to pass to Odoo char)
     host: ''
     port: 5432
-    # Directly defined in _helpers.tpl: {{- printf "%s%sdb" .Release.Name .Release.Namespace -}}
+    # Directly defined in _helpers.tpl: {{- printf "%s_db" .Release.Name -}} under odoo.databaseName
     database: ''
-    # Directly defined in _helpers.tpl: printf "%s-%s-user" .Release.Name .Release.Namespace
+    # Directly defined in _helpers.tpl: {{- printf "%s_db_user" .Release.Name -}} 
     user: ''
     # Provided via secrets below
     password: ""
     postgresqlPostgresUser: "postgres"
     # Passed via secrets
     postgresqlPostgresPassword: ""
-    # The secrets below should be created before this installation is done. All keys within same secret. 
-    existingSecret: openg2p-commons-postgresql
-    # Directly defined in _helpers.tpl: printf "%s-%s-user" .Release.Name .Release.Namespace
+    # The secrets below should be created before this installation is done.
+    # Directly defined in _helpers.tpl: .Release.Name under odoo.databaseSecretName
+    existingSecret: ''
+    existingPostgresSecret: openg2p-commons-postgresql 
+    # Directly defined in _helpers.tpl: printf "%s_db_user" .Release.Name
     existingSecretPasswordKey: ''
     existingSecretPostgresPasswordKey: postgres-password
 
   extraEnvVars: '{{- include "socialRegistry.baseEnvVars" (dict "envVars" (merge (deepCopy .Values.envVars) (deepCopy .Values.envVarsFrom)) "context" $) }}'
 
   envVars:
-    #ODOO_DATABASE_FILTER_OVERRIDE: "^registry_devops_db$"
     ODOO_SKIP_MODULES_UPDATE: yes
     LIMIT_TIME_REAL: 5000
     # This disables Odoo showing selection of databases if there are multiple databases (in our case we have only one DB for this deployment
@@ -190,7 +191,7 @@ odoo:
         credentialName: ""
 
 reporting-init:
-  enabled: true
+  enabled: false
   reportingInstallationName: '{{ tpl .Values.global.reportingInstallationName $ }}'
   opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
   postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
