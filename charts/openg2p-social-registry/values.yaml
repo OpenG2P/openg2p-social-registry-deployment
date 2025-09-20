@@ -279,8 +279,8 @@ mosipKernelPostgresInit:
         key: kerneluser
 
 redis:
-  #nameOverride: '{{ .Release.Name }}-redis'
-  enabled: false
+  # Default name of the redis service is .Release.Name-redis-master
+  enabled: true
   architecture: standalone
   auth:
     enabled: false
@@ -290,18 +290,41 @@ redis:
       enabled: false
 
 openg2p-registry-bg-tasks:
-  enabled: false
+  enabled: true
   nameOverride: bg-tasks
 
-  redisInstallationName: '{{ .Release.Name }}-redis'
+  redisInstallationName: '{{ .Release.Name }}-redis-master'
+  postgresqlInstallationName: '{{ .Values.global.postgresqlHost }}'
 
   producer:
     enabled: true
+    image:
+      tag: "1.1.1"
+    envVars:
+      REGISTRY_CELERY_BEAT_DB_DBNAME: registry_db
+      REGISTRY_CELERY_BEAT_DB_USERNAME: registry_db_user
+    envVarsFrom:
+      REGISTRY_CELERY_BEAT_DB_PASSWORD:
+        secretKeyRef:
+          name: registry
+          key: registry_db_user
+
   worker:
     enabled: true
+    image:
+      tag: "1.1.1"
     envVars:
       REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
       REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
+      REGISTRY_CELERY_WORKERS_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
+      REGISTRY_CELERY_WORKERS_DB_PORT: 5432
+      REGISTRY_CELERY_WORKERS_DB_DBNAME: registry_db
+      REGISTRY_CELERY_WORKERS_DB_USERNAME: registry_db_user
+    envVarsFrom:
+      REGISTRY_CELERY_WORKERS_DB_PASSWORD:
+        secretKeyRef:
+          name: registry
+          key: registry_db_user
 
 landing:
   enabled: false
