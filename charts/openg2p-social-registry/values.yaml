@@ -29,7 +29,7 @@ global:
   srKeymanagerAppId: OPENG2P_SR
 
 postgres-init:
-  enabled: true
+  enabled: false
   postgresql:
     host: '{{ .Values.global.postgresqlHost }}'
     port: 5432
@@ -46,7 +46,7 @@ postgres-init:
     secretUserPasswordKey: '{{ .Release.Name}}_db_user'
 
 odoo:
-  enabled: true
+  enabled: false
 
   hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
 
@@ -280,7 +280,7 @@ mosipKernelPostgresInit:
 
 redis:
   # Default name of the redis service is .Release.Name-redis-master
-  enabled: true
+  enabled: false
   architecture: standalone
   auth:
     enabled: false
@@ -290,7 +290,7 @@ redis:
       enabled: false
 
 openg2p-registry-bg-tasks:
-  enabled: true
+  enabled: false
   nameOverride: bg-tasks
 
   redisInstallationName: '{{ .Release.Name }}-redis-master'
