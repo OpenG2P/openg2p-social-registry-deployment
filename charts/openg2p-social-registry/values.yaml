@@ -95,24 +95,23 @@ odoo:
 
   externalDatabase:
     create: true
-    # Global postgresqlHost assigned in _helpers.tpl directly (otherwise it is not possible to pass to Odoo char)
-    host: ''
+    # NOTE: For few parameter below the Odoo templates have been overridden to accomodate 
+    # templating. See templates/_helpers.tpl
+    host: '{{ .Values.global.postgresqlHost }}'
     port: 5432
-    # Directly defined in _helpers.tpl: {{- printf "%s_db" .Release.Name -}} under odoo.databaseName
-    database: ''
-    # Directly defined in _helpers.tpl: {{- printf "%s_db_user" .Release.Name -}} 
-    user: ''
+    database: '{{ .Release.Name }}_db' 
+    user: '{{ .Release.Name }}_db_user'
     # Provided via secrets below
     password: ""
     postgresqlPostgresUser: "postgres"
     # Passed via secrets
     postgresqlPostgresPassword: ""
     # The secrets below should be created before this installation is done.
-    # Directly defined in _helpers.tpl: .Release.Name under odoo.databaseSecretName
-    existingSecret: ''
+    existingSecret: '{{ .Release.Name }}'
     existingPostgresSecret: openg2p-commons-postgresql 
-    # Directly defined in _helpers.tpl: printf "%s_db_user" .Release.Name
-    existingSecretPasswordKey: ''
+    # Same as user name as convention
+    existingSecretPasswordKey: '{{ .Release.Name }}_db_user' 
+    # Hardcoded as this is not likely to change frequently
     existingSecretPostgresPasswordKey: postgres-password
 
   extraEnvVars: '{{- include "socialRegistry.baseEnvVars" (dict "envVars" (merge (deepCopy .Values.envVars) (deepCopy .Values.envVarsFrom)) "context" $) }}'

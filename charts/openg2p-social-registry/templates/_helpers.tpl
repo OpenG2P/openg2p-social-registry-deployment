@@ -1,26 +1,32 @@
 {{/*
-Render Env values section
+Overriding Odoo's templates. All the variable names here match ones in Odoo's 
+values.yaml, not our registry's values.yaml. The templates here will be available
+to Odoo's chart.
 */}}
-{{- define "odoo.databaseName" -}}
-{{- printf "%s_db" .Release.Name -}}
-{{- end -}}
 
 {{- define "odoo.databaseHost" -}}
-{{- .Values.global.postgresqlHost -}}
+{{- tpl .Values.externalDatabase.host . -}}
 {{- end -}}
 
-{{- define "odoo.databaseSecretPasswordKey" -}}
-{{- printf "%s_db_user" .Release.Name -}} 
+{{- define "odoo.databaseName" -}}
+{{- tpl .Values.externalDatabase.database . -}}
 {{- end -}}
 
 {{- define "odoo.databaseUser" -}}
-{{- printf "%s_db_user" .Release.Name -}} 
+{{- tpl .Values.externalDatabase.user . -}}
+{{- end -}}
+
+{{- define "odoo.databaseSecretPasswordKey" -}}
+{{- tpl .Values.externalDatabase.existingSecretPasswordKey . -}}
 {{- end -}}
 
 {{- define "odoo.databaseSecretName" -}}
-{{- .Release.Name -}}
+{{- tpl .Values.externalDatabase.existingSecret . -}}
 {{- end -}}
 
+{{/*
+Render Env values section
+*/}}
 {{- define "socialRegistry.baseEnvVars" -}}
 {{- $context := .context -}}
 {{- range $k, $v := .envVars }}
