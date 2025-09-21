@@ -189,7 +189,7 @@ odoo:
         credentialName: ""
 
 reporting-init:
-  enabled: false
+  enabled: true 
   reportingInstallationName: '{{ tpl .Values.global.reportingInstallationName $ }}'
   opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
   postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
@@ -200,7 +200,7 @@ reporting-init:
     subDir: "scripts/social-registry"
   envVars:
     # Same as odoo.externalDatabase.database
-    DB_NAME: '{{ tpl (printf "%s%sdb" .Release.Name .Release.Namespace) $ }}' 
+    DB_NAME: '{{ .Release.Name }}_db'
   hookAnnotations:
     "helm.sh/hook-weight": "0"
 
