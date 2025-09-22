@@ -189,7 +189,7 @@ odoo:
         credentialName: ""
 
 reporting-init:
-  enabled: true 
+  enabled: false
   reportingInstallationName: '{{ tpl .Values.global.reportingInstallationName $ }}'
   opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
   postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
@@ -221,8 +221,10 @@ loggingFlow:
   extraFilters: []
 
 idgenerator:
-  enabled: false
+  enabled: true
   hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
+  artifactoryInstallationName: openg2p-commons-artifactory
+  postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
   springCloudConfig:
     enabled: true
     profile: default
@@ -238,7 +240,7 @@ idgenerator:
         key: kerneluser
 
 mosipKernelPostgresInit:
-  enabled: false
+  enabled: true
   image:
     repository: mosipid/postgres-init
     tag: 1.2.0.1-B4
