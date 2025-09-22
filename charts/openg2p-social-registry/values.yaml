@@ -327,7 +327,7 @@ openg2p-registry-bg-tasks:
           key: '{{ .Release.Name }}_db_user'
 
 landing:
-  enabled: false
+  enabled: true
   hostname: '{{ tpl .Values.global.srLandingPageHostname $ }}'
 
   commonLabels:
@@ -348,7 +348,7 @@ landing:
     externalTrafficPolicy: Cluster
 
   image:
-    repository: openg2p/openg2p-social-registry-landing
+    repository: openg2p/openg2p-registry-landing
     tag: "develop"
     pullPolicy: Always
     pullSecrets: []
@@ -427,7 +427,7 @@ landing:
   extraVolumeMounts: []
 
   envVars:
-    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}/web'
+    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}/web/'
     SR_REPORTING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
     SR_LOGGING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
     SR_MINIO_URL: 'https://{{ tpl .Values.global.srMinioHostname $ }}'
