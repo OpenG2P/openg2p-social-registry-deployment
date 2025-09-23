@@ -6,7 +6,7 @@ global:
   opensearchInstallationName: openg2p-commons-opensearch
   reportingInstallationName: openg2p-commons-reporting
 
-  srAdminHostname: registry.devops.openg2p.org
+  srAdminHostname: admin.devops.openg2p.org
   srOdkCentralHostname: odk.devops.openg2p.org
   srMinioHostname: minio.devops.openg2p.org
   srOpensearchHostname: opensearch.devops.openg2p.org
