@@ -3,29 +3,23 @@ global:
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
 
   postgresqlHost: openg2p-commons-postgresql
-  opensearchInstallationName: openg2p-commons-opensearch
+  opensearchInstallationName: openg2p-commons-opensearch 
   reportingInstallationName: openg2p-commons-reporting
 
-  srAdminHostname: admin.devops.openg2p.org
-  srOdkCentralHostname: odk.devops.openg2p.org
-  srMinioHostname: minio.devops.openg2p.org
-  srOpensearchHostname: opensearch.devops.openg2p.org
-  srKafkaUiHostname: kafka.devops.openg2p.org
-  srSupersetHostname: superset.devops.openg2p.org
-  srLandingPageHostname: registry.devops.openg2p.org
+  adminHostname: admin.devops.openg2p.org
 
   mailInstallationName: openg2p-commons-mail
 
-  srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
-  srOdooOidcClientSecret: ''
+  registryOdooOidcClientID: 'openg2p-sr-{{ .Release.Namespace }}'
+  registryOdooOidcClientSecret: ''
 
   minioInstallationName: openg2p-commons-minio
 
   sysAdminEmail: admin@openg2p.sandbox.net
 
   keymanagerInstallationName: openg2p-commons-keymanager
-  srKeymanagerAuthEnabled: false
-  srKeymanagerAppId: OPENG2P_SR
+  keymanagerAuthEnabled: false
+  registryKeymanagerAppId: OPENG2P_SR
 
 postgres-init:
   enabled: true
@@ -47,11 +41,11 @@ postgres-init:
 odoo:
   enabled: true
 
-  hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
+  hostname: '{{ tpl .Values.global.adminHostname $ }}'
 
   oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
-  oidcClientId: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
-  oidcClientSecret: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
+  oidcClientId: '{{ tpl .Values.global.registryOdooOidcClientID $ }}'
+  oidcClientSecret: '{{ tpl .Values.global.registryOdooOidcClientSecret $ }}'
 
   mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
   keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
@@ -138,14 +132,14 @@ odoo:
 
     EXTRA_ADDONS_URLS_TO_PULL: '{{ tpl .Values.extraAddonsUrlsToPull $ }}'
 
-    eEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.global.keymanagerInstallationName $ }}/v1/keymanager'
-    KEYMANAGER_AUTH_ENABLED: '{{ .Values.global.srKeymanagerAuthEnabled }}'
+    KEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.global.keymanagerInstallationName $ }}/v1/keymanager'
+    KEYMANAGER_AUTH_ENABLED: '{{ .Values.global.keymanagerAuthEnabled }}'
     KEYMANAGER_AUTH_URL: '{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/token'
     KEYMANAGER_AUTH_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
     KEYMANAGER_AUTH_CLIENT_SECRET: '{{ tpl .Values.oidcClientSecret $ }}'
-    KEYMANAGER_ENCRYPT_APP_ID: '{{ tpl .Values.global.srKeymanagerAppId $ }}'
+    KEYMANAGER_ENCRYPT_APP_ID: '{{ tpl .Values.global.registryKeymanagerAppId $ }}'
     KEYMANAGER_ENCRYPT_REF_ID: "ENCRYPT"
-    KEYMANAGER_SIGN_APP_ID: '{{ tpl .Values.global.srKeymanagerAppId $ }}'
+    KEYMANAGER_SIGN_APP_ID: '{{ tpl .Values.global.registryKeymanagerAppId $ }}'
     KEYMANAGER_SIGN_REF_ID: ""
 
     KEYCLOAK_ISSUER_URL: '{{ tpl .Values.oidcIssuerUrl $ }}'
@@ -222,7 +216,7 @@ loggingFlow:
 
 idgenerator:
   enabled: true
-  hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
+  hostname: '{{ tpl .Values.global.adminHostname $ }}'
   artifactoryInstallationName: openg2p-commons-artifactory
   postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}'
   springCloudConfig:
@@ -314,8 +308,8 @@ openg2p-registry-bg-tasks:
     image:
       tag: "1.1.1"
     envVars:
-      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.srOdooOidcClientId $ }}'
-      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.srOdooOidcClientSecret $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.registryOdooOidcClientID $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.registryOdooOidcClientSecret $ }}'
       REGISTRY_CELERY_WORKERS_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
       REGISTRY_CELERY_WORKERS_DB_PORT: 5432
       REGISTRY_CELERY_WORKERS_DB_DBNAME: '{{ .Release.Name }}_db'
@@ -326,138 +320,3 @@ openg2p-registry-bg-tasks:
           name: '{{ .Release.Name }}'
           key: '{{ .Release.Name }}_db_user'
 
-landing:
-  enabled: true
-  hostname: '{{ tpl .Values.global.srLandingPageHostname $ }}'
-
-  commonLabels:
-    app.kubernetes.io/name: '{{ include "common.names.name" . }}-landing'
-  commonAnnotations: {}
-  podLabels:
-    app.kubernetes.io/name: '{{ include "common.names.name" . }}-landing'
-  podAnnotations: {}
-
-  replicaCount: 1
-
-  service:
-    type: ClusterIP
-    port: 80
-    nodePorts:
-      http: ""
-      https: ""
-    externalTrafficPolicy: Cluster
-
-  image:
-    repository: openg2p/openg2p-registry-landing
-    tag: "develop"
-    pullPolicy: Always
-    pullSecrets: []
-
-  containerPort: 80
-
-  startupProbe:
-    enabled: true
-    httpGet:
-      path: /
-      port: http
-    initialDelaySeconds: 0
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 30
-    successThreshold: 1
-
-  livenessProbe:
-    enabled: true
-    httpGet:
-      path: /
-      port: http
-    initialDelaySeconds: 20
-    periodSeconds: 30
-    timeoutSeconds: 5
-    failureThreshold: 6
-    successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    httpGet:
-      path: /
-      port: http
-    initialDelaySeconds: 0
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 6
-    successThreshold: 1
-
-  command: []
-  args: []
-
-  hostAliases: []
-
-  resources: {}
-
-  containerSecurityContext:
-    enabled: false
-    runAsUser: 1001
-    runAsNonRoot: true
-
-  podSecurityContext:
-    enabled: false
-    fsGroup: 1001
-
-  podAffinityPreset: ""
-  podAntiAffinityPreset: soft
-  nodeAffinityPreset:
-    type: ""
-    key: ""
-    values: []
-  affinity: {}
-  nodeSelector: {}
-  tolerations: []
-
-  priorityClassName: ""
-  lifecycleHooks: {}
-
-  updateStrategy:
-    type: RollingUpdate
-
-  initContainers: []
-  sidecars: []
-
-  extraVolumes: []
-  extraVolumeMounts: []
-
-  envVars:
-    SR_ADMIN_URL: 'https://{{ tpl .Values.global.srAdminHostname $ }}/web/'
-    SR_REPORTING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
-    SR_LOGGING_URL: 'https://{{ tpl .Values.global.srOpensearchHostname $ }}'
-    SR_MINIO_URL: 'https://{{ tpl .Values.global.srMinioHostname $ }}'
-    SR_ODK_URL: 'https://{{ tpl .Values.global.srOdkCentralHostname $ }}'
-    SR_KAFKA_URL: 'https://{{ tpl .Values.global.srKafkaUiHostname $ }}'
-    SR_SUPERSET_URL: 'https://{{ tpl .Values.global.srSupersetHostname $ }}'
-    SR_KEYCLOAK_ACCOUNT_CONSOLE_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/account'
-    SR_VERSION: '{{ .Chart.Version }}'
-    SR_APP_VERSION: '{{ .Values.odoo.image.tag }}'
-
-  envVarsFrom: {}
-
-  istio:
-    enabled: true
-    virtualservice:
-      enabled: true
-      host: ""
-      gateway: "internal"
-      destination: '{{ include "common.names.fullname" . }}-landing'
-      destinationPort: '{{ .Values.landing.service.port }}'
-      prefix: /
-      rewriteUri: ""
-    gateway:
-      enabled: false
-      host: ""
-      ingressController:
-        istio: ingressgateway
-      httpTlsRedirect: true
-      httpEnabled: true
-      httpsEnabled: false
-      tls:
-        mode: SIMPLE
-        credentialName: ""

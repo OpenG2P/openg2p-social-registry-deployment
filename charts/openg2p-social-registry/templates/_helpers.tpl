@@ -55,12 +55,3 @@ Render Env values section
 {{- include "socialRegistry.baseEnvVars" (dict "envVars" $envVars "context" $) }}
 {{- end -}}
 
-{{- define "socialRegistry.kafka-ui.envVars" -}}
-{{- $envVars := merge (deepCopy .Values.kafkaUi.envVars) (deepCopy .Values.kafkaUi.envVarsFrom) -}}
-{{- include "socialRegistry.baseEnvVars" (dict "envVars" $envVars "context" $) }}
-{{- end -}}
-
-{{- define "socialRegistry.landing.envVars" -}}
-{{- $envVars := merge (deepCopy .Values.landing.envVars) (deepCopy .Values.landing.envVarsFrom) -}}
-{{- include "socialRegistry.baseEnvVars" (dict "envVars" $envVars "context" $) }}
-{{- end -}}
