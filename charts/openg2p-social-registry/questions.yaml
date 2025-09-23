@@ -41,14 +41,14 @@ questions:
 - variable: global.minioInstallationName
   description: Internal service name of MinIO
   type: reference_service
-  label: MinIO internal service name 
+  label: MinIO internal service name
   group: MinIO Settings
 
 # OpenSearch Settings
 - variable: global.opensearchInstallationName
-  description: Internal service name of Opensearch 
+  description: Internal service name of Opensearch
   type: reference_service
-  label: Opensearch internal service name 
+  label: Opensearch internal service name
   group: OpenSearch Settings
 
 # Logging Settings

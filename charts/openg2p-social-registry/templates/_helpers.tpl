@@ -54,4 +54,3 @@ Render Env values section
 {{- $envVars := merge (deepCopy .Values.mosipKernelPostgresInit.envVars) (deepCopy .Values.mosipKernelPostgresInit.envVarsFrom) -}}
 {{- include "socialRegistry.baseEnvVars" (dict "envVars" $envVars "context" $) }}
 {{- end -}}
-
