@@ -1,5 +1,5 @@
 {{/*
-Overriding Odoo's templates. All the variable names here match ones in Odoo's 
+Overriding Odoo's templates. All the variable names here match ones in Odoo's
 values.yaml, not our registry's values.yaml. The templates here will be available
 to Odoo's chart.
 */}}

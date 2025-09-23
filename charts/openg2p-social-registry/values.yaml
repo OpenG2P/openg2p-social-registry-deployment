@@ -2,7 +2,7 @@ global:
   keycloakBaseUrl: https://keycloak.openg2p.org
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
 
-  postgresqlHost: openg2p-commons-postgresql 
+  postgresqlHost: openg2p-commons-postgresql
   opensearchInstallationName: openg2p-commons-opensearch
   reportingInstallationName: openg2p-commons-reporting
 
@@ -19,7 +19,7 @@ global:
   srOdooOidcClientId: 'openg2p-sr-{{ .Release.Namespace }}'
   srOdooOidcClientSecret: ''
 
-  minioInstallationName: openg2p-commons-minio 
+  minioInstallationName: openg2p-commons-minio
 
   sysAdminEmail: admin@openg2p.sandbox.net
 
@@ -41,7 +41,7 @@ postgres-init:
     user: '{{ .Release.Name}}_db_user'
     # Same as odoo.externalDatabase.existingSecret - make sure these two are same if any changes are made.
     secret: '{{ .Release.Name }}'
-    # As convention same as user 
+    # As convention same as user
     secretUserPasswordKey: '{{ .Release.Name}}_db_user'
 
 odoo:
@@ -55,7 +55,7 @@ odoo:
 
   mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
   keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
-  minioInstallationName: '{{ tpl .Values.global.minioInstallationName $ }}' 
+  minioInstallationName: '{{ tpl .Values.global.minioInstallationName $ }}'
 
   extraAddonsUrlsToPull: ''
 
@@ -94,11 +94,11 @@ odoo:
 
   externalDatabase:
     create: true
-    # NOTE: For few parameter below the Odoo templates have been overridden to accomodate 
+    # NOTE: For few parameter below the Odoo templates have been overridden to accomodate
     # templating. See templates/_helpers.tpl
     host: '{{ .Values.global.postgresqlHost }}'
     port: 5432
-    database: '{{ .Release.Name }}_db' 
+    database: '{{ .Release.Name }}_db'
     user: '{{ .Release.Name }}_db_user'
     # Provided via secrets below
     password: ""
@@ -107,9 +107,9 @@ odoo:
     postgresqlPostgresPassword: ""
     # The secrets below should be created before this installation is done.
     existingSecret: '{{ .Release.Name }}'
-    existingPostgresSecret: openg2p-commons-postgresql 
+    existingPostgresSecret: openg2p-commons-postgresql
     # Same as user name as convention
-    existingSecretPasswordKey: '{{ .Release.Name }}_db_user' 
+    existingSecretPasswordKey: '{{ .Release.Name }}_db_user'
     # Hardcoded as this is not likely to change frequently
     existingSecretPostgresPasswordKey: postgres-password
 
@@ -192,7 +192,7 @@ reporting-init:
   enabled: false
   reportingInstallationName: '{{ tpl .Values.global.reportingInstallationName $ }}'
   opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
-  postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
+  postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}'
   gitConfig:
     enabled: true
     repoUrl: https://github.com/openg2p/openg2p-reporting
@@ -224,7 +224,7 @@ idgenerator:
   enabled: true
   hostname: '{{ tpl .Values.global.srAdminHostname $ }}'
   artifactoryInstallationName: openg2p-commons-artifactory
-  postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}' 
+  postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}'
   springCloudConfig:
     enabled: true
     profile: default

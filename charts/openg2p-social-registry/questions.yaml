@@ -20,7 +20,7 @@ questions:
 - variable: global.postgresqlHost
   description: Host name for Postgresql that is installed externally
   type: string
-  label: Postgresql Hostname 
+  label: Postgresql Hostname
   group: General Settings
 
 - variable: global.srOdooOidcClientId
