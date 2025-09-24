@@ -3,7 +3,7 @@
 This helm contains the following components:
 
 - Postgres Init
-- Social Registry Odoo Package (Odoo + PostgreSQL)
+- Social Registry Odoo Package (without PostgreSQL) 
 - ID Generator
 - Reporting Init
 - SR Background Tasks

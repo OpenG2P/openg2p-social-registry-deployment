@@ -21,7 +21,7 @@ dependencies:
   repository: https://openg2p.github.io/openg2p-helm
   condition: reporting-init.enabled
 - name: redis
-  version: 19.x.x
+  version: 19.6.4
   repository: https://openg2p.github.io/openg2p-helm
   condition: redis.enabled
 - name: openg2p-registry-bg-tasks
