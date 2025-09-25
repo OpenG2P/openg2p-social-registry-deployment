@@ -2,11 +2,11 @@
 
 This helm contains the following components:
 
+- Odoo (without PostgreSQL) 
 - Postgres Init
-- Social Registry Odoo Package (without PostgreSQL) 
+- Background Tasks
 - ID Generator
 - Reporting Init
-- SR Background Tasks
 - Redis
 - Logging flow
 - MOSIP Kernel Postgres Init 
