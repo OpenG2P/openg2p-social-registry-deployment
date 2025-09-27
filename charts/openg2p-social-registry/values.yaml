@@ -202,7 +202,7 @@ reporting-init:
     "helm.sh/hook-weight": "0"
 
 loggingFlow:
-  enabled: false
+  enabled: true
   opensearchInstallationName: '{{ tpl .Values.global.opensearchInstallationName $ }}'
   outputRef: '{{ tpl .Values.loggingFlow.opensearchInstallationName $ }}'
   extraLocalOutputRefs: []
