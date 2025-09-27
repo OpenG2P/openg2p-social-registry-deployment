@@ -151,7 +151,7 @@ odoo:
 
     S3_URL: 'http://{{ tpl .Values.global.minioInstallationName $ }}:9000'
     # S3_REGION: "other"  # For minio
-    WAIT_FOR_POSTGRES: 180 
+    WAIT_FOR_POSTGRES: 180
 
   envVarsFrom:
     S3_ACCESS_KEY_ID:
