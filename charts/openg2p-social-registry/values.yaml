@@ -100,7 +100,10 @@ odoo:
     # Passed via secrets
     postgresqlPostgresPassword: ""
     # The secrets below should be created before this installation is done.
+    # Secret for the DB (not Postgresql server)
     existingSecret: '{{ .Release.Name }}'
+    # This is secret for PostgreSQL server. Both have different secrets (unlike original Odoo
+    # Chart where the same secret contained keys for both Postgres and the database user
     existingPostgresSecret: openg2p-commons-postgresql
     # Same as user name as convention
     existingSecretPasswordKey: '{{ .Release.Name }}_db_user'
@@ -148,7 +151,7 @@ odoo:
 
     S3_URL: 'http://{{ tpl .Values.global.minioInstallationName $ }}:9000'
     # S3_REGION: "other"  # For minio
-    WAIT_FOR_POSTGRES: 180
+    WAIT_FOR_POSTGRES: 180 
 
   envVarsFrom:
     S3_ACCESS_KEY_ID:

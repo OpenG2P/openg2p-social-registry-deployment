@@ -25,6 +25,25 @@ to Odoo's chart.
 {{- end -}}
 
 {{/*
+Add environment variables to configure database values
+*/}}
+{{- define "odoo.databaseSecretPostgresPasswordKey" -}}
+{{- if .Values.postgresql.enabled -}}
+    {{- print "postgres-password" -}}
+{{- else -}}
+    {{- if .Values.externalDatabase.existingPostgresSecret -}}
+        {{- if .Values.externalDatabase.existingSecretPostgresPasswordKey -}}
+            {{- printf "%s" .Values.externalDatabase.existingSecretPostgresPasswordKey -}}
+        {{- else -}}
+            {{- print "postgres-password" -}}
+        {{- end -}}
+    {{- else -}}
+        {{- print "postgres-password" -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Render Env values section
 */}}
 {{- define "socialRegistry.baseEnvVars" -}}

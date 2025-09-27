@@ -2,7 +2,7 @@ apiVersion: v2
 name: openg2p-registry
 description: A Helm chart for OpenG2P Registry
 type: application
-version: 0.0.0-develop
+version: 3.0.0-develop
 dependencies:
 - name: postgres-init
   version: 0.0.0-develop
