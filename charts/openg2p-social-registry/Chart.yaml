@@ -2,38 +2,38 @@ apiVersion: v2
 name: openg2p-social-registry
 description: A Helm chart for OpenG2P Social Registry
 type: application
-version: 2.0.7
+version: 2.0.8
 dependencies:
 - name: odoo
   version: 26.2.9
-  repository: oci://registry-1.docker.io/bitnamicharts
+  repository: https://openg2p.github.io/openg2p-helm
   condition: odoo.enabled
 - name: mail
-  version: 1.2.0
+  version: 1.2.1
   repository: https://openg2p.github.io/openg2p-helm
   condition: mail.enabled
 - name: minio
   version: 12.12.2
-  repository: oci://registry-1.docker.io/bitnamicharts
+  repository: https://openg2p.github.io/openg2p-helm
   condition: minio.enabled
 - name: odk-central
-  version: v2024.2.2
+  version: v2024.2.3
   repository: https://openg2p.github.io/openg2p-helm
   condition: odk-central.enabled
 - name: opensearch
   version: 1.2.0
-  repository: oci://registry-1.docker.io/bitnamicharts
+  repository: https://openg2p.github.io/openg2p-helm
   condition: opensearch.enabled
 - name: kafka
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 29.x.x
+  repository: https://openg2p.github.io/openg2p-helm
+  version: 29.3.14
   condition: kafka.enabled
 - name: artifactory
-  version: 12.0.2
+  version: 12.0.3
   repository: https://openg2p.github.io/openg2p-helm
   condition: artifactory.enabled
 - name: keymanager
-  version: 12.0.2
+  version: 12.0.3
   repository: https://openg2p.github.io/openg2p-helm
   condition: keymanager.enabled
 - name: softhsm
@@ -41,7 +41,7 @@ dependencies:
   version: 12.0.1
   condition: softhsm.enabled
 - name: idgenerator
-  version: 12.0.2
+  version: 12.0.3
   repository: https://openg2p.github.io/openg2p-helm
   condition: idgenerator.enabled
 - name: reporting
@@ -54,11 +54,11 @@ dependencies:
   condition: reporting-init.enabled
 - name: redis
   alias: bgTasksRedis
-  version: 19.x.x
-  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 19.6.4
+  repository: https://openg2p.github.io/openg2p-helm
   condition: openg2p-registry-bg-tasks.enabled
 - name: openg2p-registry-bg-tasks
-  version: 1.1.1
+  version: 1.1.2
   repository: https://openg2p.github.io/openg2p-helm
   condition: openg2p-registry-bg-tasks.enabled
 - name: superset
@@ -67,20 +67,20 @@ dependencies:
   condition: superset.enabled
 - name: redis
   alias: supersetRedis
-  version: 19.x.x
-  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 19.6.4
+  repository: https://openg2p.github.io/openg2p-helm
   condition: superset.enabled
 - name: esignet
-  version: 1.4.2
+  version: 1.4.3
   repository: https://openg2p.github.io/openg2p-helm
   condition: esignet.enabled
 - name: redis
   alias: esignetRedis
-  version: 19.x.x
-  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 19.6.4
+  repository: https://openg2p.github.io/openg2p-helm
   condition: esignet.enabled
 - name: mock-identity-system
-  version: 0.9.4
+  version: 0.9.5
   repository: https://openg2p.github.io/openg2p-helm
   condition: mock-identity-system.enabled
 icon: https://openg2p.github.io/openg2p-helm/openg2p-logo.png
