@@ -6,7 +6,7 @@ global:
   opensearchInstallationName: openg2p-commons-opensearch
   reportingInstallationName: openg2p-commons-reporting
 
-  adminHostname: admin.devops.openg2p.org
+  adminHostname: admin-registry.devops.openg2p.org
 
   mailInstallationName: openg2p-commons-mail
 
