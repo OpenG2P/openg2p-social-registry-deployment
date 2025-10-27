@@ -29,14 +29,14 @@ postgres-init:
     # Hard coding. Same as one defined under Odoo
     existingSecret: openg2p-commons-postgresql
     existingSecretPostgresPasswordKey: postgres-password
-  database:
-    # Same as db in Odoo - make sure any changes to the name are synced with Odoo definitions
-    name: '{{ .Release.Name }}_db'
-    user: '{{ .Release.Name}}_db_user'
-    # Same as odoo.externalDatabase.existingSecret - make sure these two are same if any changes are made.
-    secret: '{{ .Release.Name }}'
-    # As convention same as user
-    secretUserPasswordKey: '{{ .Release.Name}}_db_user'
+  databases:
+      # Same as db in Odoo - make sure any changes to the name are synced with Odoo definitions
+    - name: '{{ .Release.Name }}_db'
+      user: '{{ .Release.Name}}_db_user'
+      # Same as odoo.externalDatabase.existingSecret - make sure these two are same if any changes are made.
+      secret: '{{ .Release.Name }}'
+      # As convention same as user
+      secretUserPasswordKey: '{{ .Release.Name}}_db_user'
 
 odoo:
   enabled: true
