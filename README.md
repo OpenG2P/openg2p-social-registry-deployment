@@ -1,3 +1,3 @@
 # OpenG2P Social Registry Deployment
 
-Helm Charts and deployment scripts.
+Helm Charts and Deployment Scripts.
