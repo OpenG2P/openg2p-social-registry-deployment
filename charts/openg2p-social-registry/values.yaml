@@ -236,45 +236,6 @@ idgenerator:
         name: '{{ tpl .Values.global.postgresqlHost $ }}-addl-user-passwords'
         key: kerneluser
 
-mosipKernelPostgresInit:
-  enabled: true
-  image:
-    repository: mosipid/postgres-init
-    tag: 1.2.0.1-B4
-    pullPolicy: Always
-  containerSecurityContext:
-    enabled: false
-  podSecurityContext:
-    enabled: false
-  commonAnnotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "0"
-    "helm.sh/hook-delete-policy": before-hook-creation
-  command:
-    - bash
-  args:
-    - -c
-    - until pg_isready -h ${DB_SERVERIP} -p ${DB_PORT}; do sleep 3; done && ./postgres-init.sh
-
-  envVars:
-    MOSIP_DB_NAME: mosip_kernel
-    DB_SERVERIP: '{{ tpl .Values.global.postgresqlHost $ }}'
-    DB_PORT: '5432'
-    SU_USER: postgres
-    DB_USER: kerneluser
-    DML_FLAG: '0'
-    GIT_REPO_URL: https://github.com/mosip/commons.git
-    GIT_BRANCH: v1.2.0.1
-  envVarsFrom:
-    SU_USER_PWD:
-      secretKeyRef:
-        name: '{{ tpl .Values.global.postgresqlHost $ }}'
-        key: postgres-password
-    DBUSER_PWD:
-      secretKeyRef:
-        name: '{{ tpl .Values.global.postgresqlHost $ }}-addl-user-passwords'
-        key: kerneluser
-
 redis:
   # Default name of the redis service is .Release.Name-redis-master
   enabled: true
