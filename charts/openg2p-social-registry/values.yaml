@@ -233,8 +233,8 @@ idgenerator:
   envVarsFrom:
     db_dbuser_password:
       secretKeyRef:
-        name: '{{ tpl .Values.global.postgresqlHost $ }}-addl-user-passwords'
-        key: kerneluser
+        name: kernel
+        key: kernel_db_user
 
 redis:
   # Default name of the redis service is .Release.Name-redis-master

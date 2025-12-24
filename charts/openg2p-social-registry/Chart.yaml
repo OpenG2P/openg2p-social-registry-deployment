@@ -13,7 +13,7 @@ dependencies:
   repository: https://openg2p.github.io/openg2p-helm
   condition: odoo.enabled
 - name: idgenerator
-  version: 12.0.4
+  version: 12.0.5
   repository: https://openg2p.github.io/openg2p-helm
   condition: idgenerator.enabled
 - name: reporting-init
