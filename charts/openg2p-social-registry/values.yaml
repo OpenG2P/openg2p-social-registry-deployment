@@ -2,22 +2,22 @@ global:
   keycloakBaseUrl: https://keycloak.openg2p.org
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
 
-  postgresqlHost: openg2p-commons-postgresql
-  opensearchInstallationName: openg2p-commons-opensearch
-  reportingInstallationName: openg2p-commons-reporting
+  postgresqlHost: commons-postgresql
+  opensearchInstallationName: commons-opensearch
+  reportingInstallationName: commons-reporting
 
   adminHostname: admin-registry.devops.openg2p.org
 
-  mailInstallationName: openg2p-commons-mail
+  mailInstallationName: commons-mail
 
   registryOdooOidcClientID: 'openg2p-sr-{{ .Release.Namespace }}'
   registryOdooOidcClientSecret: ''
 
-  minioInstallationName: openg2p-commons-minio
+  minioInstallationName: commons-minio
 
   sysAdminEmail: admin@openg2p.sandbox.net
 
-  keymanagerInstallationName: openg2p-commons-keymanager
+  keymanagerInstallationName: commons-keymanager
   keymanagerAuthEnabled: false
   registryKeymanagerAppId: OPENG2P_SR
 
@@ -27,7 +27,7 @@ postgres-init:
     host: '{{ .Values.global.postgresqlHost }}'
     port: 5432
     # Hard coding. Same as one defined under Odoo
-    existingSecret: openg2p-commons-postgresql
+    existingSecret: commons-postgresql
     existingSecretPostgresPasswordKey: postgres-password
   databases:
       # Same as db in Odoo - make sure any changes to the name are synced with Odoo definitions
@@ -104,7 +104,7 @@ odoo:
     existingSecret: '{{ .Release.Name }}'
     # This is secret for PostgreSQL server. Both have different secrets (unlike original Odoo
     # Chart where the same secret contained keys for both Postgres and the database user
-    existingPostgresSecret: openg2p-commons-postgresql
+    existingPostgresSecret: commons-postgresql
     # Same as user name as convention
     existingSecretPasswordKey: '{{ .Release.Name }}_db_user'
     # Hardcoded as this is not likely to change frequently
@@ -220,7 +220,7 @@ loggingFlow:
 idgenerator:
   enabled: true
   hostname: '{{ tpl .Values.global.adminHostname $ }}'
-  artifactoryInstallationName: openg2p-commons-artifactory
+  artifactoryInstallationName: commons-artifactory
   postgresqlInstallationName: '{{ tpl .Values.global.postgresqlHost $ }}'
   springCloudConfig:
     enabled: true
