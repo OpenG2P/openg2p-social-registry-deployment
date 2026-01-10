@@ -105,8 +105,7 @@ odoo:
     # This is secret for PostgreSQL server. Both have different secrets (unlike original Odoo
     # Chart where the same secret contained keys for both Postgres and the database user
     existingPostgresSecret: commons-postgresql
-    # Same as user name as convention
-    existingSecretPasswordKey: '{{ .Release.Name }}_db_user'
+    existingSecretPasswordKey: '{{ .Release.Name }}_db_user_password'
     # Hardcoded as this is not likely to change frequently
     existingSecretPostgresPasswordKey: postgres-password
 
@@ -270,7 +269,7 @@ openg2p-registry-bg-tasks:
       REGISTRY_CELERY_BEAT_DB_PASSWORD:
         secretKeyRef:
           name: '{{ .Release.Name }}'
-          key: '{{ .Release.Name }}_db_user'
+          key: '{{ .Release.Name }}_db_user_password'
   worker:
     enabled: true
     image:
@@ -286,4 +285,4 @@ openg2p-registry-bg-tasks:
       REGISTRY_CELERY_WORKERS_DB_PASSWORD:
         secretKeyRef:
           name: '{{ .Release.Name }}'
-          key: '{{ .Release.Name }}_db_user'
+          key: '{{ .Release.Name }}_db_user_password'
