@@ -1,6 +1,7 @@
 global:
   keycloakBaseUrl: https://keycloak.openg2p.org
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
+  oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
 
   postgresqlHost: commons-postgresql
   opensearchInstallationName: commons-opensearch
@@ -10,8 +11,13 @@ global:
 
   mailInstallationName: commons-mail
 
-  registryOdooOidcClientID: 'openg2p-sr-{{ .Release.Namespace }}'
-  registryOdooOidcClientSecret: ''
+  # This is the typical default name of the client and secret
+  oidcClientID: 'openg2p-sr-{{ .Release.Namespace }}'
+  # Name of the secret in Kuberentes containing (DO NOT pass password directly here)
+  # Same name as client id by convension.
+  oidcClientSecret: '{{ tpl .Values.global.oidcClientID $ }}'
+  # Key containing client password. Hardcoded in Keycloak Init script
+  oidcClientSecretKey: 'client_secret'
 
   minioInstallationName: commons-minio
 
@@ -43,9 +49,6 @@ odoo:
 
   hostname: '{{ tpl .Values.global.adminHostname $ }}'
 
-  oidcIssuerUrl: '{{ tpl .Values.global.keycloakIssuerUrl $ }}'
-  oidcClientId: '{{ tpl .Values.global.registryOdooOidcClientID $ }}'
-  oidcClientSecret: '{{ tpl .Values.global.registryOdooOidcClientSecret $ }}'
 
   mailInstallationName: '{{ tpl .Values.global.mailInstallationName $ }}'
   keymanagerInstallationName: '{{ tpl .Values.global.keymanagerInstallationName $ }}'
@@ -136,17 +139,15 @@ odoo:
 
     KEYMANAGER_API_BASE_URL: 'http://{{ tpl .Values.global.keymanagerInstallationName $ }}/v1/keymanager'
     KEYMANAGER_AUTH_ENABLED: '{{ .Values.global.keymanagerAuthEnabled }}'
-    KEYMANAGER_AUTH_URL: '{{ tpl .Values.oidcIssuerUrl $ }}/protocol/openid-connect/token'
-    KEYMANAGER_AUTH_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
-    KEYMANAGER_AUTH_CLIENT_SECRET: '{{ tpl .Values.oidcClientSecret $ }}'
+    KEYMANAGER_AUTH_URL: '{{ tpl .Values.global.oidcIssuerUrl $ }}/protocol/openid-connect/token'
+    KEYMANAGER_AUTH_CLIENT_ID: '{{ tpl .Values.global.oidcClientID $ }}'
     KEYMANAGER_ENCRYPT_APP_ID: '{{ tpl .Values.global.registryKeymanagerAppId $ }}'
     KEYMANAGER_ENCRYPT_REF_ID: "ENCRYPT"
     KEYMANAGER_SIGN_APP_ID: '{{ tpl .Values.global.registryKeymanagerAppId $ }}'
     KEYMANAGER_SIGN_REF_ID: ""
 
-    KEYCLOAK_ISSUER_URL: '{{ tpl .Values.oidcIssuerUrl $ }}'
-    KEYCLOAK_CLIENT_ID: '{{ tpl .Values.oidcClientId $ }}'
-    KEYCLOAK_CLIENT_SECRET: '{{ tpl .Values.oidcClientSecret $ }}'
+    KEYCLOAK_ISSUER_URL: '{{ tpl .Values.global.oidcIssuerUrl $ }}'
+    KEYCLOAK_CLIENT_ID: '{{ tpl .Values.global.oidcClientID $ }}'
 
     S3_URL: 'http://{{ tpl .Values.global.minioInstallationName $ }}:9000'
     # S3_REGION: "other"  # For minio
@@ -161,6 +162,14 @@ odoo:
       secretKeyRef:
         key: root-password
         name: '{{ tpl .Values.global.minioInstallationName $ }}'
+    KEYMANAGER_AUTH_CLIENT_SECRET:
+      secretKeyRef:
+        name: '{{ tpl .Values.global.oidcClientSecret $ }}'
+        key: '{{ tpl .Values.global.oidcClientSecretKey $ }}'
+    KEYCLOAK_CLIENT_SECRET:
+      secretKeyRef:
+        name: '{{ tpl .Values.global.oidcClientSecret $ }}'
+        key: '{{ tpl .Values.global.oidcClientSecretKey $ }}'
 
   istio:
     enabled: true
@@ -275,8 +284,7 @@ openg2p-registry-bg-tasks:
     image:
       tag: "1.1.1"
     envVars:
-      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.registryOdooOidcClientID $ }}'
-      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: '{{ tpl .Values.global.registryOdooOidcClientSecret $ }}'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: '{{ tpl .Values.global.oidcClientID $ }}'
       REGISTRY_CELERY_WORKERS_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
       REGISTRY_CELERY_WORKERS_DB_PORT: 5432
       REGISTRY_CELERY_WORKERS_DB_DBNAME: '{{ .Release.Name }}_db'
@@ -286,3 +294,7 @@ openg2p-registry-bg-tasks:
         secretKeyRef:
           name: '{{ .Release.Name }}'
           key: '{{ .Release.Name }}_db_user_password'
+      REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET:
+      secretKeyRef:
+        name: '{{ tpl .Values.global.oidcClientSecret $ }}'
+        key: '{{ tpl .Values.global.oidcClientSecretKey $ }}'

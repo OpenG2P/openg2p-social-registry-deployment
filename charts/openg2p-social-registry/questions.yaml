@@ -17,16 +17,22 @@ questions:
   label: Postgresql Hostname
   group: General Settings
 
-- variable: global.registryOdooOidcClientID
-  description: OIDC Client ID for Social Registry
+- variable: global.oidcClientID
+  description: OIDC client ID
   type: string
   label: OIDC Client ID
   group: General Settings
 
-- variable: global.registryOdooOidcClientSecret
-  description: OIDC Client Secret for Social Registry
+- variable: global.oidcClientSecret
+  description: OIDC client Kubernetes secret name
   type: string
-  label: OIDC Client Secret
+  label: OIDC Client Secret Name
+  group: General Settings
+
+- variable: global.oidcClientSecretKey
+  description: Key containing OIDC client password
+  type: string
+  label: OIDC Client Secret Key
   group: General Settings
 
 - variable: odoo.extraAddonsUrlsToPull
