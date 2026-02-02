@@ -2,7 +2,7 @@ apiVersion: v2
 name: openg2p-social-registry
 description: A Helm chart for OpenG2P Social Registry
 type: application
-version: 2.0.8
+version: 2.0.9
 dependencies:
 - name: odoo
   version: 26.2.9
@@ -17,9 +17,19 @@ dependencies:
   repository: https://openg2p.github.io/openg2p-helm
   condition: minio.enabled
 - name: odk-central
-  version: v2024.2.3
+  version: v2025.2.1
   repository: https://openg2p.github.io/openg2p-helm
   condition: odk-central.enabled
+- name: redis
+  alias: odk-central-enketo-redis-main
+  version: 19.6.4
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: odk-central-enketo-redis-main.enabled
+- name: redis
+  alias: odk-central-enketo-redis-cache
+  version: 19.6.4
+  repository: https://openg2p.github.io/openg2p-helm
+  condition: odk-central-enketo-redis-cache.enabled
 - name: opensearch
   version: 1.2.0
   repository: https://openg2p.github.io/openg2p-helm
